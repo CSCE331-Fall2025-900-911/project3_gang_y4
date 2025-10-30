@@ -1,22 +1,15 @@
 services:
-  # --- Backend (Express) ---
   - type: web
     name: express-backend
     env: node
     plan: free
     rootDir: server
     buildCommand: npm install
-    startCommand: node server.js
+    startCommand: node index.js
     envVars:
-      - key: NODE_ENV
-        value: production
       - key: PORT
         value: 10000
-      # If your backend serves the React build:
-      # - key: CLIENT_BUILD_PATH
-      #   value: ../client/build
 
-  # --- Frontend (React) ---
   - type: web
     name: react-frontend
     env: static
