@@ -1,19 +1,17 @@
 services:
-  # Backend (Express)
   - type: web
     name: express-backend
     env: node
     plan: free
-    rootDir: server       # must point to folder containing backend package.json
+    rootDir: server          # correct folder for backend
     buildCommand: npm install
     startCommand: node index.js
 
-  # Frontend (React)
   - type: web
     name: react-frontend
     env: static
     plan: free
-    rootDir: client       # must point to folder containing frontend package.json
+    rootDir: client          # correct folder for frontend
     buildCommand: npm install && npm run build
     staticPublishPath: build
     envVars:
