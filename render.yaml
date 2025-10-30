@@ -3,19 +3,14 @@ services:
     name: express-backend
     env: node
     plan: free
-    rootDir: server
+    rootDir: server        # <-- must match the folder with package.json
     buildCommand: npm install
     startCommand: node index.js
-    envVars:
-      - key: PORT
-        value: 10000
 
   - type: web
     name: react-frontend
     env: static
-    rootDir: client
+    plan: free
+    rootDir: client        # <-- must match the folder with package.json
     buildCommand: npm install && npm run build
     staticPublishPath: build
-    envVars:
-      - key: REACT_APP_API_URL
-        value: https://express-backend.onrender.com
