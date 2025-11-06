@@ -1,0 +1,377 @@
+{
+  "info": {
+    "name": "Boba Kiosk API Tests",
+    "description": "Complete test suite for the Boba Kiosk backend API",
+    "schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json"
+  },
+  "item": [
+    {
+      "name": "Health Check",
+      "event": [
+        {
+          "listen": "test",
+          "script": {
+            "exec": [
+              "pm.test(\"Status code is 200\", function () {",
+              "    pm.response.to.have.status(200);",
+              "});",
+              "",
+              "pm.test(\"Response has status field\", function () {",
+              "    var jsonData = pm.response.json();",
+              "    pm.expect(jsonData).to.have.property('status');",
+              "    pm.expect(jsonData.status).to.eql('OK');",
+              "});",
+              "",
+              "pm.test(\"Response has timestamp\", function () {",
+              "    var jsonData = pm.response.json();",
+              "    pm.expect(jsonData).to.have.property('timestamp');",
+              "});",
+              "",
+              "pm.test(\"Response time is less than 500ms\", function () {",
+              "    pm.expect(pm.response.responseTime).to.be.below(500);",
+              "});"
+            ]
+          }
+        }
+      ],
+      "request": {
+        "method": "GET",
+        "header": [],
+        "url": {
+          "raw": "http://localhost:5000/health",
+          "protocol": "http",
+          "host": ["localhost"],
+          "port": "5000",
+          "path": ["health"]
+        }
+      }
+    },
+    {
+      "name": "Get All Menu Items",
+      "event": [
+        {
+          "listen": "test",
+          "script": {
+            "exec": [
+              "pm.test(\"Status code is 200\", function () {",
+              "    pm.response.to.have.status(200);",
+              "});",
+              "",
+              "pm.test(\"Response is an array\", function () {",
+              "    var jsonData = pm.response.json();",
+              "    pm.expect(jsonData).to.be.an('array');",
+              "});",
+              "",
+              "pm.test(\"Array is not empty\", function () {",
+              "    var jsonData = pm.response.json();",
+              "    pm.expect(jsonData.length).to.be.above(0);",
+              "});",
+              "",
+              "pm.test(\"Each item has required fields\", function () {",
+              "    var jsonData = pm.response.json();",
+              "    jsonData.forEach(function(item) {",
+              "        pm.expect(item).to.have.property('menuid');",
+              "        pm.expect(item).to.have.property('menu_name');",
+              "        pm.expect(item).to.have.property('price');",
+              "        pm.expect(item).to.have.property('item_type');",
+              "    });",
+              "});",
+              "",
+              "pm.test(\"Price is a valid number\", function () {",
+              "    var jsonData = pm.response.json();",
+              "    var firstItem = jsonData[0];",
+              "    pm.expect(parseFloat(firstItem.price)).to.be.a('number');",
+              "});"
+            ]
+          }
+        }
+      ],
+      "request": {
+        "method": "GET",
+        "header": [],
+        "url": {
+          "raw": "http://localhost:5000/api/menu",
+          "protocol": "http",
+          "host": ["localhost"],
+          "port": "5000",
+          "path": ["api", "menu"]
+        }
+      }
+    },
+    {
+      "name": "Get Grouped Menu Items",
+      "event": [
+        {
+          "listen": "test",
+          "script": {
+            "exec": [
+              "pm.test(\"Status code is 200\", function () {",
+              "    pm.response.to.have.status(200);",
+              "});",
+              "",
+              "pm.test(\"Response is an array\", function () {",
+              "    var jsonData = pm.response.json();",
+              "    pm.expect(jsonData).to.be.an('array');",
+              "});",
+              "",
+              "pm.test(\"Has Tea, Slush, and/or Seasonal categories\", function () {",
+              "    var jsonData = pm.response.json();",
+              "    var categories = jsonData.map(cat => cat.category);",
+              "    pm.expect(categories).to.include.members(['Tea', 'Slush']);",
+              "});",
+              "",
+              "pm.test(\"Each category has items array\", function () {",
+              "    var jsonData = pm.response.json();",
+              "    jsonData.forEach(function(category) {",
+              "        pm.expect(category).to.have.property('category');",
+              "        pm.expect(category).to.have.property('items');",
+              "        pm.expect(category.items).to.be.an('array');",
+              "    });",
+              "});",
+              "",
+              "pm.test(\"Items have correct structure\", function () {",
+              "    var jsonData = pm.response.json();",
+              "    var firstCategory = jsonData[0];",
+              "    var firstItem = firstCategory.items[0];",
+              "    pm.expect(firstItem).to.have.property('id');",
+              "    pm.expect(firstItem).to.have.property('name');",
+              "    pm.expect(firstItem).to.have.property('price');",
+              "    pm.expect(firstItem).to.have.property('type');",
+              "});",
+              "",
+              "pm.test(\"Price is a number\", function () {",
+              "    var jsonData = pm.response.json();",
+              "    var firstItem = jsonData[0].items[0];",
+              "    pm.expect(firstItem.price).to.be.a('number');",
+              "});"
+            ]
+          }
+        }
+      ],
+      "request": {
+        "method": "GET",
+        "header": [],
+        "url": {
+          "raw": "http://localhost:5000/api/menu/grouped",
+          "protocol": "http",
+          "host": ["localhost"],
+          "port": "5000",
+          "path": ["api", "menu", "grouped"]
+        }
+      }
+    },
+    {
+      "name": "Get Tea Category",
+      "event": [
+        {
+          "listen": "test",
+          "script": {
+            "exec": [
+              "pm.test(\"Status code is 200\", function () {",
+              "    pm.response.to.have.status(200);",
+              "});",
+              "",
+              "pm.test(\"Response is an array\", function () {",
+              "    var jsonData = pm.response.json();",
+              "    pm.expect(jsonData).to.be.an('array');",
+              "});",
+              "",
+              "pm.test(\"All items are Tea type\", function () {",
+              "    var jsonData = pm.response.json();",
+              "    jsonData.forEach(function(item) {",
+              "        pm.expect(item.item_type).to.eql('Tea');",
+              "    });",
+              "});"
+            ]
+          }
+        }
+      ],
+      "request": {
+        "method": "GET",
+        "header": [],
+        "url": {
+          "raw": "http://localhost:5000/api/menu/category/Tea",
+          "protocol": "http",
+          "host": ["localhost"],
+          "port": "5000",
+          "path": ["api", "menu", "category", "Tea"]
+        }
+      }
+    },
+    {
+      "name": "Get Slush Category",
+      "event": [
+        {
+          "listen": "test",
+          "script": {
+            "exec": [
+              "pm.test(\"Status code is 200\", function () {",
+              "    pm.response.to.have.status(200);",
+              "});",
+              "",
+              "pm.test(\"All items are Slush type\", function () {",
+              "    var jsonData = pm.response.json();",
+              "    jsonData.forEach(function(item) {",
+              "        pm.expect(item.item_type).to.eql('Slush');",
+              "    });",
+              "});"
+            ]
+          }
+        }
+      ],
+      "request": {
+        "method": "GET",
+        "header": [],
+        "url": {
+          "raw": "http://localhost:5000/api/menu/category/Slush",
+          "protocol": "http",
+          "host": ["localhost"],
+          "port": "5000",
+          "path": ["api", "menu", "category", "Slush"]
+        }
+      }
+    },
+    {
+      "name": "Get Seasonal Category",
+      "event": [
+        {
+          "listen": "test",
+          "script": {
+            "exec": [
+              "pm.test(\"Status code is 200\", function () {",
+              "    pm.response.to.have.status(200);",
+              "});",
+              "",
+              "pm.test(\"All items are Seasonal type\", function () {",
+              "    var jsonData = pm.response.json();",
+              "    if (jsonData.length > 0) {",
+              "        jsonData.forEach(function(item) {",
+              "            pm.expect(item.item_type).to.eql('Seasonal');",
+              "        });",
+              "    }",
+              "});"
+            ]
+          }
+        }
+      ],
+      "request": {
+        "method": "GET",
+        "header": [],
+        "url": {
+          "raw": "http://localhost:5000/api/menu/category/Seasonal",
+          "protocol": "http",
+          "host": ["localhost"],
+          "port": "5000",
+          "path": ["api", "menu", "category", "Seasonal"]
+        }
+      }
+    },
+    {
+      "name": "Get Specific Menu Item (ID=4)",
+      "event": [
+        {
+          "listen": "test",
+          "script": {
+            "exec": [
+              "pm.test(\"Status code is 200\", function () {",
+              "    pm.response.to.have.status(200);",
+              "});",
+              "",
+              "pm.test(\"Response is an object\", function () {",
+              "    var jsonData = pm.response.json();",
+              "    pm.expect(jsonData).to.be.an('object');",
+              "});",
+              "",
+              "pm.test(\"Has correct menu ID\", function () {",
+              "    var jsonData = pm.response.json();",
+              "    pm.expect(jsonData.menuid).to.eql(4);",
+              "});",
+              "",
+              "pm.test(\"Has all required fields\", function () {",
+              "    var jsonData = pm.response.json();",
+              "    pm.expect(jsonData).to.have.property('menuid');",
+              "    pm.expect(jsonData).to.have.property('menu_name');",
+              "    pm.expect(jsonData).to.have.property('price');",
+              "    pm.expect(jsonData).to.have.property('item_type');",
+              "});"
+            ]
+          }
+        }
+      ],
+      "request": {
+        "method": "GET",
+        "header": [],
+        "url": {
+          "raw": "http://localhost:5000/api/menu/4",
+          "protocol": "http",
+          "host": ["localhost"],
+          "port": "5000",
+          "path": ["api", "menu", "4"]
+        }
+      }
+    },
+    {
+      "name": "Get Non-existent Menu Item (404 Test)",
+      "event": [
+        {
+          "listen": "test",
+          "script": {
+            "exec": [
+              "pm.test(\"Status code is 404\", function () {",
+              "    pm.response.to.have.status(404);",
+              "});",
+              "",
+              "pm.test(\"Response has error message\", function () {",
+              "    var jsonData = pm.response.json();",
+              "    pm.expect(jsonData).to.have.property('error');",
+              "    pm.expect(jsonData.error).to.include('not found');",
+              "});"
+            ]
+          }
+        }
+      ],
+      "request": {
+        "method": "GET",
+        "header": [],
+        "url": {
+          "raw": "http://localhost:5000/api/menu/99999",
+          "protocol": "http",
+          "host": ["localhost"],
+          "port": "5000",
+          "path": ["api", "menu", "99999"]
+        }
+      }
+    },
+    {
+      "name": "Invalid Route (404 Test)",
+      "event": [
+        {
+          "listen": "test",
+          "script": {
+            "exec": [
+              "pm.test(\"Status code is 404\", function () {",
+              "    pm.response.to.have.status(404);",
+              "});",
+              "",
+              "pm.test(\"Response has error message\", function () {",
+              "    var jsonData = pm.response.json();",
+              "    pm.expect(jsonData).to.have.property('error');",
+              "});"
+            ]
+          }
+        }
+      ],
+      "request": {
+        "method": "GET",
+        "header": [],
+        "url": {
+          "raw": "http://localhost:5000/api/nonexistent",
+          "protocol": "http",
+          "host": ["localhost"],
+          "port": "5000",
+          "path": ["api", "nonexistent"]
+        }
+      }
+    }
+  ]
+}
