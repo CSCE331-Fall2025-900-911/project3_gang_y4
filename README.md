@@ -69,36 +69,6 @@ A modern, full-stack kiosk application for boba tea shops featuring customer sel
 - **Git** - Version control
 - **npm** - Package management
 
-## 📁 Project Structure
-
-```
-project3_gang_y4/
-├── client/                          # React frontend
-│   ├── src/
-│   │   ├── components/
-│   │   │   ├── LoginScreen.jsx     # Authentication interface
-│   │   │   └── CustomerKiosk.jsx   # Main customer checkout
-│   │   ├── styles/                 # CSS modules
-│   │   ├── App.jsx                 # Root component with routing
-│   │   └── main.jsx                # React entry point
-│   ├── index.html
-│   ├── vite.config.js              # Vite configuration
-│   └── package.json
-│
-├── server/                          # Express backend
-│   ├── routes/
-│   │   └── menu.js                 # Menu API endpoints
-│   ├── db.js                       # Database connection pool
-│   ├── index.js                    # Express server setup
-│   ├── .env.example                # Environment template
-│   └── package.json
-│
-├── .gitignore                       # Git ignore rules
-├── README.md                        # This file
-├── SERVER_SETUP.md                  # Backend setup guide
-├── POSTMAN_TESTING_GUIDE.md        # API testing documentation
-└── Boba_Kiosk_API_Tests.postman_collection.json
-```
 
 ## 🚀 Getting Started
 
@@ -127,17 +97,15 @@ npm install
 Create a `.env` file in the `server/` directory:
 
 ```env
-DB_HOST=csce-315-db.engr.tamu.edu
-DB_USER=gang_y4
-DB_PASSWORD=your_password_here
-DB_NAME=gang_y4_db
-DB_PORT=5432
+DB_HOST=
+DB_USER=
+DB_PASSWORD=
+DB_NAME=
+DB_PORT=
 
 PORT=5001
 NODE_ENV=development
 ```
-
-**⚠️ IMPORTANT:** Never commit the `.env` file. It's already in `.gitignore`.
 
 Start the backend server:
 
@@ -251,11 +219,6 @@ GET /api/menu/:id
 ```
 Retrieve a specific menu item by ID.
 
-### Testing with Postman
-
-Import `Boba_Kiosk_API_Tests.postman_collection.json` into Postman for a complete test suite with 9 requests and 35+ automated tests.
-
-See `POSTMAN_TESTING_GUIDE.md` for detailed testing instructions.
 
 ## 💻 Development
 
@@ -296,30 +259,7 @@ npm start
 - **API**: RESTful conventions
 - **Database**: Parameterized queries (SQL injection protection)
 
-## 🔒 Security Features
 
-✅ Environment variables for sensitive data  
-✅ `.gitignore` prevents credential commits  
-✅ SQL injection prevention (parameterized queries)  
-✅ Connection pooling with timeout limits  
-✅ CORS protection configured  
-✅ Error handling without exposing internals  
-
-## 🧪 Testing
-
-### API Testing
-- Comprehensive Postman collection included
-- 9 endpoint tests with automated assertions
-- Health checks, data validation, error handling
-
-### Manual Testing Checklist
-- [ ] Server starts without errors
-- [ ] Database connection successful
-- [ ] Health endpoint returns 200
-- [ ] Menu loads from database
-- [ ] Cart operations work correctly
-- [ ] Login flow completes
-- [ ] Category navigation scrolls properly
 
 ## 📝 Environment Variables
 
@@ -334,69 +274,7 @@ PORT=              # Server port (default: 5001)
 NODE_ENV=          # Environment (development/production)
 ```
 
-## 🤝 Contributing
 
-### For Team Members
-
-1. **Never commit credentials**
-   - `.env` is gitignored
-   - Use `.env.example` as template
-   - Each developer creates their own `.env`
-
-2. **Branch naming convention**
-   ```
-   feature/description
-   bugfix/description
-   hotfix/description
-   ```
-
-3. **Commit messages**
-   ```
-   feat: Add customer checkout feature
-   fix: Resolve cart calculation bug
-   docs: Update API documentation
-   style: Format code with prettier
-   ```
-
-4. **Pull Request process**
-   - Create feature branch
-   - Make changes
-   - Test thoroughly
-   - Submit PR with description
-   - Request review from team member
-
-## 🐛 Troubleshooting
-
-### Backend Issues
-
-**"Connection refused" or "ECONNREFUSED"**
-- Ensure PostgreSQL database is accessible
-- Check if you're on TAMU VPN (required for off-campus)
-- Verify credentials in `.env`
-
-**"Port already in use"**
-- Change `PORT` in `.env` to another port (e.g., 5001, 5002)
-- Update `client/vite.config.js` proxy target to match
-- Kill existing process: `lsof -ti:5001 | xargs kill -9`
-
-**"Authentication failed"**
-- Double-check password in `.env`
-- Ensure no extra spaces in `.env` values
-- Verify database user has correct permissions
-
-### Frontend Issues
-
-**"Failed to load menu"**
-- Ensure backend is running on correct port
-- Check browser console (F12) for errors
-- Verify proxy settings in `vite.config.js`
-- Test API directly: `curl http://localhost:5001/api/menu`
-
-**Blank screen after login**
-- Check backend is returning data
-- Open browser DevTools Network tab
-- Look for failed API requests
-- Check console for JavaScript errors
 
 ## 📚 Additional Documentation
 
@@ -404,40 +282,3 @@ NODE_ENV=          # Environment (development/production)
 - **[POSTMAN_TESTING_GUIDE.md](POSTMAN_TESTING_GUIDE.md)** - API testing guide
 - **Database Schema** - See project documentation for full schema
 
-## 👥 Team
-
-**Course:** CSCE 331 - Software Engineering  
-**Semester:** Fall 2025  
-**Section:** 900-911  
-**Team:** gang_y4
-
-## 📄 License
-
-This project is part of a university course assignment. All rights reserved.
-
-## 🎯 Project Status
-
-**Current Phase:** Sprint 2 - Customer Interface Implementation  
-**Next Phase:** Sprint 3 - Employee POS & Manager Dashboard
-
-### Recent Updates
-- ✅ Backend API with PostgreSQL integration
-- ✅ Customer self-checkout interface
-- ✅ Dynamic menu loading from database
-- ✅ Shopping cart functionality
-- ✅ Authentication flow (placeholder)
-- ✅ API testing suite
-
-### Upcoming Features
-- 🔄 Employee POS interface
-- 🔄 Manager dashboard with analytics
-- 🔄 Real authentication (Google OAuth)
-- 🔄 Payment processing
-- 🔄 Order history
-- 🔄 Inventory management
-
----
-
-**Built with ❤️ by Team gang_y4 at Texas A&M University**
-
-For questions or issues, please open a GitHub issue or contact the team.
