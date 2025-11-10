@@ -1,18 +1,83 @@
 import React, { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
+import { useGoogleLogin } from '@react-oauth/google';
 import '../styles/LoginScreen.css';
 
 function LoginScreen({ onLogin }) {
   const navigate = useNavigate();
   const [showManagerLogin, setShowManagerLogin] = useState(false);
   const [managerCredentials, setManagerCredentials] = useState({ username: '', password: '' });
+  const [googleLoading, setGoogleLoading] = useState(false);
+  const [googleError, setGoogleError] = useState(null);
 
-  const handleGoogleLogin = () => {
-    // TODO: Implement Google OAuth
-    console.log('Google login clicked');
-    onLogin({ type: 'google', name: 'Google User' });
-    navigate('/customer');
-  };
+  // Google OAuth login handler
+  const handleGoogleLogin = useGoogleLogin({
+    onSuccess: async (tokenResponse) => {
+      try {
+        setGoogleLoading(true);
+        setGoogleError(null);
+
+        // Get user info from Google using access token
+        const userInfoResponse = await fetch(
+          'https://www.googleapis.com/oauth2/v3/userinfo',
+          {
+            headers: {
+              Authorization: `Bearer ${tokenResponse.access_token}`,
+            },
+          }
+        );
+
+        if (!userInfoResponse.ok) {
+          throw new Error('Failed to fetch user info from Google');
+        }
+
+        const googleUserInfo = await userInfoResponse.json();
+
+        // Send user info to your backend for verification and user creation/retrieval
+        const response = await fetch('/api/auth/google', {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json',
+          },
+          body: JSON.stringify({
+            googleId: googleUserInfo.sub,
+            email: googleUserInfo.email,
+            name: googleUserInfo.name,
+            picture: googleUserInfo.picture,
+          }),
+        });
+
+        if (!response.ok) {
+          const errorData = await response.json();
+          throw new Error(errorData.error || 'Authentication failed');
+        }
+
+        const data = await response.json();
+        
+        // Call onLogin with user data from backend
+        onLogin({
+          id: data.user.id,
+          type: 'google',
+          name: data.user.name || data.user.username,
+          email: data.user.email,
+          username: data.user.username,
+          picture: data.user.picture_url,
+        });
+
+        navigate('/customer');
+      } catch (error) {
+        console.error('Google login error:', error);
+        setGoogleError(error.message || 'Failed to authenticate with Google');
+      } finally {
+        setGoogleLoading(false);
+      }
+    },
+    onError: (error) => {
+      console.error('Google OAuth error:', error);
+      setGoogleError('Google sign-in was cancelled or failed');
+      setGoogleLoading(false);
+    },
+  });
 
   const handleEmailPhoneLogin = () => {
     // TODO: Implement email/phone authentication
@@ -76,9 +141,18 @@ function LoginScreen({ onLogin }) {
         </div>
 
         <div className="login-options">
-          <button className="login-button google-login" onClick={handleGoogleLogin}>
+          {googleError && (
+            <div className="error-message" style={{ color: 'red', marginBottom: '10px' }}>
+              {googleError}
+            </div>
+          )}
+          <button 
+            className="login-button google-login" 
+            onClick={handleGoogleLogin}
+            disabled={googleLoading}
+          >
             <span className="icon">G</span>
-            Sign in with Google
+            {googleLoading ? 'Signing in...' : 'Sign in with Google'}
           </button>
 
           <button className="login-button email-login" onClick={handleEmailPhoneLogin}>
