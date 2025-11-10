@@ -1,4 +1,5 @@
 import React, { useState, useEffect } from 'react';
+import CustomizationModal from './CustomizationModal';
 import '../styles/CustomerKiosk.css';
 
 function CustomerKiosk({ user, onLogout }) {
@@ -7,6 +8,11 @@ function CustomerKiosk({ user, onLogout }) {
   const [menuData, setMenuData] = useState([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
+  
+  // Customization modal state
+  const [showCustomizationModal, setShowCustomizationModal] = useState(false);
+  const [selectedItem, setSelectedItem] = useState(null);
+  const [editingCartIndex, setEditingCartIndex] = useState(null);
 
   // Fetch menu data from API on component mount
   useEffect(() => {
@@ -20,11 +26,23 @@ function CustomerKiosk({ user, onLogout }) {
         }
         
         const data = await response.json();
-        setMenuData(data);
+        
+        // Filter out Add-On and Customization items - only show actual products
+        const filteredData = data
+          .filter(category => category.category !== 'Add-On' && category.category !== 'Customization')
+          .map(category => ({
+            ...category,
+            items: category.items.filter(item => 
+              item.type !== 'Add-On' && item.type !== 'Customization'
+            )
+          }))
+          .filter(category => category.items.length > 0); // Remove empty categories
+        
+        setMenuData(filteredData);
         
         // Set first category as active
-        if (data.length > 0) {
-          setActiveCategory(data[0].category);
+        if (filteredData.length > 0) {
+          setActiveCategory(filteredData[0].category);
         }
         
         setError(null);
@@ -47,38 +65,62 @@ function CustomerKiosk({ user, onLogout }) {
     }
   };
 
-  const addToCart = (item) => {
-    const existingItem = cart.find(cartItem => cartItem.id === item.id);
-    if (existingItem) {
-      setCart(cart.map(cartItem => 
-        cartItem.id === item.id 
-          ? { ...cartItem, quantity: cartItem.quantity + 1 }
-          : cartItem
-      ));
+  const openCustomizationModal = (item) => {
+    setSelectedItem(item);
+    setEditingCartIndex(null);
+    setShowCustomizationModal(true);
+  };
+
+  const openEditCustomization = (cartIndex) => {
+    const cartItem = cart[cartIndex];
+    setSelectedItem({
+      id: cartItem.id,
+      name: cartItem.name,
+      price: cartItem.price
+    });
+    setEditingCartIndex(cartIndex);
+    setShowCustomizationModal(true);
+  };
+
+  const handleCustomizationConfirm = (customizedItem) => {
+    if (editingCartIndex !== null) {
+      // Editing existing item
+      const newCart = [...cart];
+      newCart[editingCartIndex] = customizedItem;
+      setCart(newCart);
     } else {
-      setCart([...cart, { ...item, quantity: 1 }]);
+      // Adding new item
+      setCart([...cart, customizedItem]);
+    }
+    setShowCustomizationModal(false);
+    setSelectedItem(null);
+    setEditingCartIndex(null);
+  };
+
+  const removeFromCart = (cartIndex) => {
+    const item = cart[cartIndex];
+    if (item.quantity > 1) {
+      const newCart = [...cart];
+      newCart[cartIndex] = { ...item, quantity: item.quantity - 1, itemTotal: item.itemTotal / item.quantity * (item.quantity - 1) };
+      setCart(newCart);
+    } else {
+      deleteFromCart(cartIndex);
     }
   };
 
-  const removeFromCart = (itemId) => {
-    const existingItem = cart.find(cartItem => cartItem.id === itemId);
-    if (existingItem.quantity > 1) {
-      setCart(cart.map(cartItem => 
-        cartItem.id === itemId 
-          ? { ...cartItem, quantity: cartItem.quantity - 1 }
-          : cartItem
-      ));
-    } else {
-      setCart(cart.filter(cartItem => cartItem.id !== itemId));
-    }
+  const addQuantity = (cartIndex) => {
+    const item = cart[cartIndex];
+    const newCart = [...cart];
+    newCart[cartIndex] = { ...item, quantity: item.quantity + 1, itemTotal: item.itemTotal / item.quantity * (item.quantity + 1) };
+    setCart(newCart);
   };
 
-  const deleteFromCart = (itemId) => {
-    setCart(cart.filter(cartItem => cartItem.id !== itemId));
+  const deleteFromCart = (cartIndex) => {
+    setCart(cart.filter((_, index) => index !== cartIndex));
   };
 
   const calculateTotal = () => {
-    return cart.reduce((total, item) => total + (item.price * item.quantity), 0).toFixed(2);
+    return cart.reduce((total, item) => total + item.itemTotal, 0).toFixed(2);
   };
 
   const handleCheckout = () => {
@@ -154,7 +196,7 @@ function CustomerKiosk({ user, onLogout }) {
                         </div>
                         <button 
                           className="add-button"
-                          onClick={() => addToCart(item)}
+                          onClick={() => openCustomizationModal(item)}
                         >
                           Add +
                         </button>
@@ -174,19 +216,33 @@ function CustomerKiosk({ user, onLogout }) {
             {cart.length === 0 ? (
               <p className="empty-cart">Your cart is empty</p>
             ) : (
-              cart.map((item) => (
-                <div key={item.id} className="cart-item">
-                  <div className="cart-item-info">
+              cart.map((item, index) => (
+                <div key={index} className="cart-item">
+                  <div 
+                    className="cart-item-info" 
+                    onClick={() => openEditCustomization(index)}
+                    style={{ cursor: 'pointer' }}
+                  >
                     <h4>{item.name}</h4>
-                    <p className="cart-item-price">${(item.price * item.quantity).toFixed(2)}</p>
+                    {item.customizations && item.customizations.length > 0 && (
+                      <div className="customizations-list">
+                        {item.customizations.map((custom, idx) => (
+                          <span key={idx} className="customization-tag">
+                            {custom.name}
+                            {custom.price > 0 && ` (+$${custom.price.toFixed(2)})`}
+                          </span>
+                        ))}
+                      </div>
+                    )}
+                    <p className="cart-item-price">${item.itemTotal.toFixed(2)}</p>
                   </div>
                   <div className="cart-item-controls">
-                    <button onClick={() => removeFromCart(item.id)}>-</button>
+                    <button onClick={() => removeFromCart(index)}>-</button>
                     <span>{item.quantity}</span>
-                    <button onClick={() => addToCart(item)}>+</button>
+                    <button onClick={() => addQuantity(index)}>+</button>
                     <button 
                       className="delete-button"
-                      onClick={() => deleteFromCart(item.id)}
+                      onClick={() => deleteFromCart(index)}
                     >
                       ×
                     </button>
@@ -210,6 +266,22 @@ function CustomerKiosk({ user, onLogout }) {
           </div>
         </aside>
       </div>
+
+      {/* Customization Modal */}
+      {showCustomizationModal && selectedItem && (
+        <CustomizationModal
+          item={selectedItem}
+          onClose={() => {
+            setShowCustomizationModal(false);
+            setSelectedItem(null);
+            setEditingCartIndex(null);
+          }}
+          onConfirm={handleCustomizationConfirm}
+          existingCustomizations={
+            editingCartIndex !== null ? cart[editingCartIndex].customizations : null
+          }
+        />
+      )}
     </div>
   );
 }

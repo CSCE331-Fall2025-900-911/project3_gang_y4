@@ -297,6 +297,23 @@
   font-size: 1rem;
   color: #333;
   flex: 1;
+  margin-bottom: 5px;
+}
+
+.customizations-list {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 5px;
+  margin: 8px 0;
+}
+
+.customization-tag {
+  background: #f0f0f0;
+  color: #666;
+  font-size: 0.75rem;
+  padding: 3px 8px;
+  border-radius: 4px;
+  display: inline-block;
 }
 
 .cart-item-price {

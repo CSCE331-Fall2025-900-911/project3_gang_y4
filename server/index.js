@@ -3,6 +3,8 @@ import cors from 'cors';
 import dotenv from 'dotenv';
 import { testConnection } from './db.js';
 import menuRoutes from './routes/menu.js';
+import customizationRoutes from './routes/customizations.js';
+import orderRoutes from './routes/orders.js';
 
 // Load environment variables
 dotenv.config();
@@ -17,7 +19,7 @@ app.use(express.urlencoded({ extended: true }));
 
 // Request logging middleware
 app.use((req, res, next) => {
-  console.log(`\n${req.method} ${req.path}`);
+  console.log(`\n📨 ${req.method} ${req.path}`);
   console.log(`   URL: ${req.url}`);
   console.log(`   Original URL: ${req.originalUrl}`);
   next();
@@ -30,6 +32,8 @@ app.get('/health', (req, res) => {
 
 // API Routes
 app.use('/api/menu', menuRoutes);
+app.use('/api/customizations', customizationRoutes);
+app.use('/api/orders', orderRoutes);
 
 // 404 handler
 app.use((req, res) => {
@@ -48,15 +52,15 @@ const startServer = async () => {
     // Test database connection before starting
     const dbConnected = await testConnection();
     if (!dbConnected) {
-      console.error('Failed to connect to database. Please check your .env file.');
+      console.error('❌ Failed to connect to database. Please check your .env file.');
       process.exit(1);
     }
 
     app.listen(PORT, () => {
-      console.log(`\nServer running on port ${PORT}`);
-      console.log(`Health check: http://localhost:${PORT}/health`);
-      console.log(`Menu API: http://localhost:${PORT}/api/menu`);
-      console.log(`\nServer is ready to accept requests!\n`);
+      console.log(`\n🚀 Server running on port ${PORT}`);
+      console.log(`📍 Health check: http://localhost:${PORT}/health`);
+      console.log(`📋 Menu API: http://localhost:${PORT}/api/menu`);
+      console.log(`\n✨ Server is ready to accept requests!\n`);
     });
   } catch (error) {
     console.error('Failed to start server:', error);
