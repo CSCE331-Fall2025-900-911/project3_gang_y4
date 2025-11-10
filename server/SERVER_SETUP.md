@@ -36,7 +36,7 @@ DB_PASSWORD=YOUR_ACTUAL_PASSWORD_HERE
 DB_NAME=gang_y4_db
 DB_PORT=5432
 
-PORT=5000
+PORT=5001
 NODE_ENV=development
 ```
 
@@ -55,16 +55,16 @@ You should see:
 ```
 ✅ Connected to PostgreSQL database
 Database connection test successful: { now: ... }
-🚀 Server running on port 5000
-📍 Health check: http://localhost:5000/health
-📋 Menu API: http://localhost:5000/api/menu
+🚀 Server running on port 5001
+📍 Health check: http://localhost:5001/health
+📋 Menu API: http://localhost:5001/api/menu
 ```
 
 ## 🛣️ API Endpoints
 
 ### Get All Menu Items (Flat List)
 ```
-GET http://localhost:5000/api/menu
+GET http://localhost:5001/api/menu
 ```
 
 Returns:
@@ -82,7 +82,7 @@ Returns:
 
 ### Get Menu Items Grouped by Category
 ```
-GET http://localhost:5000/api/menu/grouped
+GET http://localhost:5001/api/menu/grouped
 ```
 
 Returns:
@@ -113,14 +113,14 @@ Returns:
 
 ### Get Items by Category
 ```
-GET http://localhost:5000/api/menu/category/Tea
-GET http://localhost:5000/api/menu/category/Slush
-GET http://localhost:5000/api/menu/category/Seasonal
+GET http://localhost:5001/api/menu/category/Tea
+GET http://localhost:5001/api/menu/category/Slush
+GET http://localhost:5001/api/menu/category/Seasonal
 ```
 
 ### Get Single Item by ID
 ```
-GET http://localhost:5000/api/menu/4
+GET http://localhost:5001/api/menu/4
 ```
 
 ## 🔗 Connecting Frontend to Backend
@@ -137,20 +137,20 @@ Frontend will automatically proxy `/api/*` requests to `http://localhost:5000`
 ### Using curl:
 ```bash
 # Health check
-curl http://localhost:5000/health
+curl http://localhost:5001/health
 
 # Get all menu items
-curl http://localhost:5000/api/menu
+curl http://localhost:5001/api/menu
 
 # Get grouped menu
-curl http://localhost:5000/api/menu/grouped
+curl http://localhost:5001/api/menu/grouped
 
 # Get specific category
-curl http://localhost:5000/api/menu/category/Tea
+curl http://localhost:5001/api/menu/category/Tea
 ```
 
 ### Using your browser:
-Just visit: `http://localhost:5000/api/menu/grouped`
+Just visit: `http://localhost:5001/api/menu/grouped`
 
 ## 📁 Project Structure
 
