@@ -1,8 +1,4 @@
-# Backend Setup Guide - Secure Database Integration
-
-## 🔐 Security First
-
-Your database credentials are now stored securely using environment variables and **will never be committed to GitHub**.
+# Backend Setup Guide 
 
 ## 📋 Setup Instructions
 
@@ -30,20 +26,15 @@ cp .env.example .env
 Then edit `.env` and add your actual password:
 
 ```env
-DB_HOST=csce-315-db.engr.tamu.edu
-DB_USER=gang_y4
-DB_PASSWORD=YOUR_ACTUAL_PASSWORD_HERE
-DB_NAME=gang_y4_db
+DB_HOST=
+DB_USER=
+DB_PASSWORD=
+DB_NAME=
 DB_PORT=5432
 
 PORT=5001
 NODE_ENV=development
 ```
-
-**⚠️ IMPORTANT:** 
-- The `.env` file is already in `.gitignore` and will NOT be committed to GitHub
-- Never share your `.env` file or commit it to version control
-- Each team member needs to create their own `.env` file locally
 
 ### 3. Start the Server
 
@@ -151,54 +142,3 @@ curl http://localhost:5001/api/menu/category/Tea
 
 ### Using your browser:
 Just visit: `http://localhost:5001/api/menu/grouped`
-
-## 📁 Project Structure
-
-```
-server/
-├── index.js              # Main Express server
-├── db.js                 # Database connection pool
-├── routes/
-│   └── menu.js          # Menu API routes
-├── .env                 # YOUR credentials (NOT in git)
-├── .env.example         # Template (safe to commit)
-└── package.json
-```
-
-## 🔒 Security Features
-
-✅ Environment variables for sensitive data  
-✅ `.gitignore` prevents committing `.env`  
-✅ Connection pooling for performance  
-✅ SQL injection prevention (parameterized queries)  
-✅ Error handling without exposing internals  
-✅ CORS protection  
-
-## 🚨 Common Issues
-
-### "Connection refused"
-- Check if the database is accessible from your network
-- TAMU VPN may be required for off-campus access
-
-### "Authentication failed"
-- Double-check your password in `.env`
-- Ensure no extra spaces in `.env` file
-
-### "Cannot find module"
-- Run `npm install` in the server directory
-- Make sure you're using Node.js 16+
-
-## 📝 Next Steps
-
-1. Update `CustomerKiosk.jsx` to fetch from `/api/menu/grouped` instead of using mock data
-2. Add error handling and loading states in the frontend
-3. Implement order submission endpoints
-4. Add employee and manager authentication routes
-
-## 🤝 Team Collaboration
-
-When sharing code with teammates:
-1. ✅ Commit everything EXCEPT `.env`
-2. ✅ Share `.env.example` so they know what variables to set
-3. ✅ Each person creates their own `.env` with their credentials
-4. ✅ Never commit actual passwords or connection strings
