@@ -1,5 +1,5 @@
 import express from 'express';
-// import { query } from '../db.js'; // COMMENTED OUT: No database connection needed for now
+import { query } from '../db.js';
 
 const router = express.Router();
 
@@ -135,6 +135,67 @@ router.post('/google', async (req, res) => {
     */
     
     res.status(500).json({ error: 'Authentication failed', details: error.message });
+  }
+});
+
+/**
+ * POST /api/auth/manager
+ * Authenticates a manager/employee with username and password
+ * 
+ * Request body: { username: string, password: string }
+ * Response: { success: true, user: { employeeid, first_name, last_name, username, level } }
+ * 
+ * Note: Queries the employees table and verifies credentials.
+ * Passwords are stored as plain text, so direct comparison is used.
+ * Any employee level can login through this endpoint.
+ */
+router.post('/manager', async (req, res) => {
+  try {
+    const { username, password } = req.body;
+
+    // Validate input
+    if (!username || !password) {
+      return res.status(400).json({ error: 'Username and password are required' });
+    }
+
+    // Query database for employee with matching username and password
+    const employeeResult = await query(
+      'SELECT * FROM employees WHERE username = $1 AND password = $2',
+      [username, password]
+    );
+
+    // Check if employee exists
+    if (employeeResult.rows.length === 0) {
+      return res.status(401).json({ error: 'Invalid username or password' });
+    }
+
+    const employee = employeeResult.rows[0];
+
+    console.log('Manager/Employee authenticated:', employee.username);
+
+    // Return employee data (exclude sensitive fields like password)
+    const { password: _, ...employeeData } = employee;
+
+    res.json({
+      success: true,
+      user: employeeData
+    });
+
+  } catch (error) {
+    console.error('Manager authentication error:', error);
+    
+    // Handle database errors
+    if (error.code === '42P01') { // Table doesn't exist
+      return res.status(500).json({ 
+        error: 'Database configuration error', 
+        details: 'Employees table not found. Please ensure the database is properly set up.' 
+      });
+    }
+    
+    res.status(500).json({ 
+      error: 'Authentication failed', 
+      details: error.message 
+    });
   }
 });
 

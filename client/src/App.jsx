@@ -3,6 +3,7 @@ import { BrowserRouter as Router, Routes, Route, Navigate } from 'react-router-d
 import { GoogleOAuthProvider } from '@react-oauth/google';
 import LoginScreen from './components/LoginScreen';
 import CustomerKiosk from './components/CustomerKiosk';
+import ManagerScreen from './components/ManagerScreen';
 import './styles/App.css';
 
 function App() {
@@ -32,7 +33,11 @@ function App() {
               path="/customer" 
               element={user ? <CustomerKiosk user={user} onLogout={handleLogout} /> : <Navigate to="/" />} 
             />
-            {/* Future routes for employee and manager screens */}
+            <Route 
+              path="/manager" 
+              element={user && user.type === 'manager' ? <ManagerScreen user={user} onLogout={handleLogout} /> : <Navigate to="/" />} 
+            />
+            {/* Future routes for employee screens */}
             <Route path="*" element={<Navigate to="/" />} />
           </Routes>
         </div>

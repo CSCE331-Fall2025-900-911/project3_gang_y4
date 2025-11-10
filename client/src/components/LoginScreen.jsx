@@ -9,6 +9,8 @@ function LoginScreen({ onLogin }) {
   const [managerCredentials, setManagerCredentials] = useState({ username: '', password: '' });
   const [googleLoading, setGoogleLoading] = useState(false);
   const [googleError, setGoogleError] = useState(null);
+  const [managerLoading, setManagerLoading] = useState(false);
+  const [managerError, setManagerError] = useState(null);
 
   // Google OAuth login handler
   const handleGoogleLogin = useGoogleLogin({
@@ -91,12 +93,50 @@ function LoginScreen({ onLogin }) {
     navigate('/customer');
   };
 
-  const handleManagerLogin = (e) => {
+  const handleManagerLogin = async (e) => {
     e.preventDefault();
-    // TODO: Implement manager authentication
-    console.log('Manager login:', managerCredentials);
-    onLogin({ type: 'manager', name: 'Manager', ...managerCredentials });
-    navigate('/manager'); // Will create this route later
+    try {
+      setManagerLoading(true);
+      setManagerError(null);
+
+      // Send credentials to backend for verification
+      const response = await fetch('/api/auth/manager', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({
+          username: managerCredentials.username,
+          password: managerCredentials.password,
+        }),
+      });
+
+      if (!response.ok) {
+        const errorData = await response.json();
+        throw new Error(errorData.error || 'Authentication failed');
+      }
+
+      const data = await response.json();
+      
+      // Call onLogin with employee data from backend
+      onLogin({
+        id: data.user.employeeid,
+        type: 'manager',
+        name: `${data.user.first_name} ${data.user.last_name}`.trim() || data.user.username,
+        username: data.user.username,
+        employeeid: data.user.employeeid,
+        first_name: data.user.first_name,
+        last_name: data.user.last_name,
+        level: data.user.level,
+      });
+
+      navigate('/manager');
+    } catch (error) {
+      console.error('Manager login error:', error);
+      setManagerError(error.message || 'Failed to authenticate');
+    } finally {
+      setManagerLoading(false);
+    }
   };
 
   if (showManagerLogin) {
@@ -111,12 +151,18 @@ function LoginScreen({ onLogin }) {
           </button>
           <h1>Manager Login</h1>
           <form onSubmit={handleManagerLogin}>
+            {managerError && (
+              <div className="error-message" style={{ color: 'red', marginBottom: '10px' }}>
+                {managerError}
+              </div>
+            )}
             <input
               type="text"
               placeholder="Username"
               value={managerCredentials.username}
               onChange={(e) => setManagerCredentials({ ...managerCredentials, username: e.target.value })}
               required
+              disabled={managerLoading}
             />
             <input
               type="password"
@@ -124,8 +170,11 @@ function LoginScreen({ onLogin }) {
               value={managerCredentials.password}
               onChange={(e) => setManagerCredentials({ ...managerCredentials, password: e.target.value })}
               required
+              disabled={managerLoading}
             />
-            <button type="submit" className="login-button">Login</button>
+            <button type="submit" className="login-button" disabled={managerLoading}>
+              {managerLoading ? 'Logging in...' : 'Login'}
+            </button>
           </form>
         </div>
       </div>
