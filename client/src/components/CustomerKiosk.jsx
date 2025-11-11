@@ -1,5 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import CustomizationModal from './CustomizationModal';
+import { API_ENDPOINTS } from '../config/api';
 import '../styles/CustomerKiosk.css';
 
 function CustomerKiosk({ user, onLogout }) {
@@ -19,7 +20,7 @@ function CustomerKiosk({ user, onLogout }) {
     const fetchMenu = async () => {
       try {
         setLoading(true);
-        const response = await fetch('/api/menu/grouped');
+        const response = await fetch(API_ENDPOINTS.MENU_GROUPED);
         
         if (!response.ok) {
           throw new Error(`Failed to fetch menu: ${response.status}`);
@@ -55,7 +56,7 @@ function CustomerKiosk({ user, onLogout }) {
     };
 
     fetchMenu();
-  }, []); // Empty dependency array = run once on mount
+  }, []);
 
   const scrollToCategory = (category) => {
     setActiveCategory(category);

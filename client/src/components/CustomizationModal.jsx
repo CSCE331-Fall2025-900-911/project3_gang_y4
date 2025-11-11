@@ -1,4 +1,5 @@
 import React, { useState, useEffect } from 'react';
+import { API_ENDPOINTS } from '../config/api';
 import '../styles/CustomizationModal.css';
 
 function CustomizationModal({ item, onClose, onConfirm, existingCustomizations = null }) {
@@ -29,8 +30,8 @@ function CustomizationModal({ item, onClose, onConfirm, existingCustomizations =
       if (sweet) setSelectedSweetness(sweet.id);
     } else {
       // Set defaults for new item
-      setSelectedIce('regular'); // Will be handled in UI
-      setSelectedSweetness('regular'); // Will be handled in UI
+      setSelectedIce('regular');
+      setSelectedSweetness('regular');
     }
   }, [existingCustomizations]);
 
@@ -41,7 +42,7 @@ function CustomizationModal({ item, onClose, onConfirm, existingCustomizations =
       console.log('Fetching customization options...');
       
       // Fetch add-ons
-      const addonsResponse = await fetch('/api/customizations/addons');
+      const addonsResponse = await fetch(API_ENDPOINTS.CUSTOMIZATIONS_ADDONS);
       if (addonsResponse.ok) {
         const addonsData = await addonsResponse.json();
         console.log('Add-ons fetched:', addonsData);
@@ -52,7 +53,7 @@ function CustomizationModal({ item, onClose, onConfirm, existingCustomizations =
       }
       
       // Fetch customizations (ice, sweetness)
-      const customResponse = await fetch('/api/customizations/grouped');
+      const customResponse = await fetch(API_ENDPOINTS.CUSTOMIZATIONS_GROUPED);
       if (customResponse.ok) {
         const customData = await customResponse.json();
         console.log('Customizations fetched:', customData);

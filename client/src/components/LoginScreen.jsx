@@ -1,6 +1,7 @@
 import React, { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { useGoogleLogin } from '@react-oauth/google';
+import { API_ENDPOINTS } from '../config/api';
 import '../styles/LoginScreen.css';
 
 function LoginScreen({ onLogin }) {
@@ -36,7 +37,7 @@ function LoginScreen({ onLogin }) {
         const googleUserInfo = await userInfoResponse.json();
 
         // Send user info to your backend for verification and user creation/retrieval
-        const response = await fetch('/api/auth/google', {
+        const response = await fetch(API_ENDPOINTS.AUTH_GOOGLE, {
           method: 'POST',
           headers: {
             'Content-Type': 'application/json',
@@ -100,7 +101,7 @@ function LoginScreen({ onLogin }) {
       setManagerError(null);
 
       // Send credentials to backend for verification
-      const response = await fetch('/api/auth/manager', {
+      const response = await fetch(API_ENDPOINTS.AUTH_MANAGER, {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',

@@ -11,5 +11,12 @@ export default defineConfig({
         changeOrigin: true,
       }
     }
+  },
+  preview: {
+    port: 3000,
+    host: true // Important for Render deployment
+  },
+  build: {
+    outDir: 'dist' // Vite default, but good to be explicit
   }
 })
