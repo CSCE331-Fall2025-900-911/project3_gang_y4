@@ -191,6 +191,8 @@ function CustomerKiosk({ user, onLogout }) {
                   <div className="menu-items">
                     {category.items.map((item) => (
                       <div key={item.id} className="menu-item">
+                        <image>
+                        </image>
                         <div className="item-info">
                           <h3>{item.name}</h3>
                           <p className="item-price">${item.price.toFixed(2)}</p>
