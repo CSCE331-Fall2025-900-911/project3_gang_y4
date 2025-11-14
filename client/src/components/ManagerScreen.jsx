@@ -1,5 +1,6 @@
 import React from 'react';
 import '../styles/ManagerScreen.css';
+import SalesScreen from './SalesScreen'
 
 function ManagerScreen({ user, onLogout }) {
   return (
