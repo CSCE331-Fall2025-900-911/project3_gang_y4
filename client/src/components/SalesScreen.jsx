@@ -1,5 +1,5 @@
 import React from "react";
-import '../styles/SalesScreen.css';
+// import '../styles/SalesScreen.css';
 
 function SalesScreen({user, onLogout}) {
     return(
