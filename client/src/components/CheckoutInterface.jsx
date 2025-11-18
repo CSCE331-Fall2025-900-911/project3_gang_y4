@@ -25,6 +25,9 @@ function CheckoutInterface({ user }) {
   const [showPaymentModal, setShowPaymentModal] = useState(false);
   const [selectedCustomerId, setSelectedCustomerId] = useState(null);
 
+  // Order notes state
+  const [orderNotes, setOrderNotes] = useState('');
+
   // Fetch menu data from API on component mount
   useEffect(() => {
     const fetchMenu = async () => {
@@ -233,7 +236,7 @@ function CheckoutInterface({ user }) {
             customizations: item.customizations || [],
             item_total: item.totalPrice
           })),
-          order_notes: ''
+          order_notes: orderNotes
         },
         subtotal: subtotal,
         tax: tax,
@@ -277,6 +280,7 @@ function CheckoutInterface({ user }) {
 
       alert('Order completed successfully!' + (customerId !== 0 ? ' Rewards points added.' : ''));
       setCart([]);
+      setOrderNotes('');
       setShowCustomerLookup(false);
       setShowPaymentModal(false);
     } catch (err) {
@@ -405,6 +409,18 @@ function CheckoutInterface({ user }) {
                   <span>Total:</span>
                   <span>${calculateTotal().toFixed(2)}</span>
                 </div>
+              </div>
+
+              <div className="order-notes-section">
+                <label htmlFor="order-notes">Order Notes (optional)</label>
+                <textarea
+                  id="order-notes"
+                  className="order-notes-input"
+                  placeholder="Add special instructions or notes..."
+                  value={orderNotes}
+                  onChange={(e) => setOrderNotes(e.target.value)}
+                  rows="3"
+                />
               </div>
             </>
           )}

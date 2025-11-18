@@ -43,6 +43,29 @@
   box-shadow: 0 2px 8px rgba(102, 126, 234, 0.3);
 }
 
+.order-history-button {
+  background: #3498db;
+  color: white;
+  padding: 10px 20px;
+  border-radius: 8px;
+  font-size: 0.95rem;
+  font-weight: 600;
+  transition: all 0.3s ease;
+  border: none;
+  cursor: pointer;
+}
+
+.order-history-button:hover {
+  background: #2980b9;
+  transform: translateY(-1px);
+  box-shadow: 0 4px 12px rgba(52, 152, 219, 0.3);
+}
+
+.order-history-button:active {
+  transform: translateY(0);
+  box-shadow: 0 2px 6px rgba(52, 152, 219, 0.4);
+}
+
 .logout-button {
   background: #ff6b6b;
   color: white;
