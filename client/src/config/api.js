@@ -17,7 +17,13 @@ export const API_ENDPOINTS = {
   
   // Auth
   AUTH_GOOGLE: `${API_URL}/api/auth/google`,
+  AUTH_EMPLOYEE: `${API_URL}/api/auth/employee`,
   AUTH_MANAGER: `${API_URL}/api/auth/manager`,
+
+  // Customers
+  CUSTOMERS_LOOKUP: (username) => `${API_URL}/api/customers/lookup/${username}`,
+  CUSTOMERS_REWARDS: (custid) => `${API_URL}/api/customers/${custid}/rewards`,
+  CUSTOMERS_GOOGLE_AUTH: `${API_URL}/api/customers/google-auth`,
 };
 
 export default API_URL;

@@ -74,15 +74,83 @@ router.get('/:id', async (req, res) => {
       'SELECT menuid, menu_name, price, item_type FROM menu WHERE menuid = $1',
       [id]
     );
-    
+
     if (result.rows.length === 0) {
       return res.status(404).json({ error: 'Menu item not found' });
     }
-    
+
     res.json(result.rows[0]);
   } catch (error) {
     console.error('Error fetching menu item:', error);
     res.status(500).json({ error: 'Failed to fetch menu item' });
+  }
+});
+
+// Add new menu item
+router.post('/', async (req, res) => {
+  try {
+    const { menu_name, price, item_type } = req.body;
+
+    if (!menu_name || price === undefined || !item_type) {
+      return res.status(400).json({ error: 'Menu name, price, and item type are required' });
+    }
+
+    const result = await query(
+      'INSERT INTO menu (menu_name, price, item_type) VALUES ($1, $2, $3) RETURNING *',
+      [menu_name, price, item_type]
+    );
+
+    res.status(201).json(result.rows[0]);
+  } catch (error) {
+    console.error('Error adding menu item:', error);
+    res.status(500).json({ error: 'Failed to add menu item' });
+  }
+});
+
+// Update menu item
+router.put('/:id', async (req, res) => {
+  try {
+    const { id } = req.params;
+    const { menu_name, price, item_type } = req.body;
+
+    if (!menu_name || price === undefined || !item_type) {
+      return res.status(400).json({ error: 'Menu name, price, and item type are required' });
+    }
+
+    const result = await query(
+      'UPDATE menu SET menu_name = $1, price = $2, item_type = $3 WHERE menuid = $4 RETURNING *',
+      [menu_name, price, item_type, id]
+    );
+
+    if (result.rows.length === 0) {
+      return res.status(404).json({ error: 'Menu item not found' });
+    }
+
+    res.json(result.rows[0]);
+  } catch (error) {
+    console.error('Error updating menu item:', error);
+    res.status(500).json({ error: 'Failed to update menu item' });
+  }
+});
+
+// Delete menu item
+router.delete('/:id', async (req, res) => {
+  try {
+    const { id } = req.params;
+
+    const result = await query(
+      'DELETE FROM menu WHERE menuid = $1 RETURNING *',
+      [id]
+    );
+
+    if (result.rows.length === 0) {
+      return res.status(404).json({ error: 'Menu item not found' });
+    }
+
+    res.json({ message: 'Menu item deleted successfully', item: result.rows[0] });
+  } catch (error) {
+    console.error('Error deleting menu item:', error);
+    res.status(500).json({ error: 'Failed to delete menu item' });
   }
 });
 

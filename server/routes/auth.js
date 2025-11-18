@@ -139,15 +139,74 @@ router.post('/google', async (req, res) => {
 });
 
 /**
- * POST /api/auth/manager
- * Authenticates a manager/employee with username and password
- * 
+ * POST /api/auth/employee
+ * Authenticates an employee with username and password
+ *
  * Request body: { username: string, password: string }
  * Response: { success: true, user: { employeeid, first_name, last_name, username, level } }
- * 
+ *
  * Note: Queries the employees table and verifies credentials.
- * Passwords are stored as plain text, so direct comparison is used.
- * Any employee level can login through this endpoint.
+ * Only allows users with level='Employee' to login through this endpoint.
+ */
+router.post('/employee', async (req, res) => {
+  try {
+    const { username, password } = req.body;
+
+    // Validate input
+    if (!username || !password) {
+      return res.status(400).json({ error: 'Username and password are required' });
+    }
+
+    // Query database for employee with matching username, password, and level='Employee'
+    const employeeResult = await query(
+      'SELECT * FROM employees WHERE username = $1 AND password = $2 AND level = $3',
+      [username, password, 'Employee']
+    );
+
+    // Check if employee exists
+    if (employeeResult.rows.length === 0) {
+      return res.status(401).json({ error: 'Invalid credentials or insufficient permissions' });
+    }
+
+    const employee = employeeResult.rows[0];
+
+    console.log('Employee authenticated:', employee.username);
+
+    // Return employee data (exclude sensitive fields like password)
+    const { password: _, ...employeeData } = employee;
+
+    res.json({
+      success: true,
+      user: employeeData
+    });
+
+  } catch (error) {
+    console.error('Employee authentication error:', error);
+
+    // Handle database errors
+    if (error.code === '42P01') { // Table doesn't exist
+      return res.status(500).json({
+        error: 'Database configuration error',
+        details: 'Employees table not found. Please ensure the database is properly set up.'
+      });
+    }
+
+    res.status(500).json({
+      error: 'Authentication failed',
+      details: error.message
+    });
+  }
+});
+
+/**
+ * POST /api/auth/manager
+ * Authenticates a manager/owner with username and password
+ *
+ * Request body: { username: string, password: string }
+ * Response: { success: true, user: { employeeid, first_name, last_name, username, level } }
+ *
+ * Note: Queries the employees table and verifies credentials.
+ * Only allows users with level='Manager' or level='Owner' to login through this endpoint.
  */
 router.post('/manager', async (req, res) => {
   try {
@@ -158,20 +217,20 @@ router.post('/manager', async (req, res) => {
       return res.status(400).json({ error: 'Username and password are required' });
     }
 
-    // Query database for employee with matching username and password
+    // Query database for manager/owner with matching username and password
     const employeeResult = await query(
-      'SELECT * FROM employees WHERE username = $1 AND password = $2',
-      [username, password]
+      'SELECT * FROM employees WHERE username = $1 AND password = $2 AND (level = $3 OR level = $4)',
+      [username, password, 'Manager', 'Owner']
     );
 
-    // Check if employee exists
+    // Check if manager/owner exists
     if (employeeResult.rows.length === 0) {
-      return res.status(401).json({ error: 'Invalid username or password' });
+      return res.status(401).json({ error: 'Invalid credentials or insufficient permissions' });
     }
 
     const employee = employeeResult.rows[0];
 
-    console.log('Manager/Employee authenticated:', employee.username);
+    console.log('Manager authenticated:', employee.username);
 
     // Return employee data (exclude sensitive fields like password)
     const { password: _, ...employeeData } = employee;
@@ -183,18 +242,18 @@ router.post('/manager', async (req, res) => {
 
   } catch (error) {
     console.error('Manager authentication error:', error);
-    
+
     // Handle database errors
     if (error.code === '42P01') { // Table doesn't exist
-      return res.status(500).json({ 
-        error: 'Database configuration error', 
-        details: 'Employees table not found. Please ensure the database is properly set up.' 
+      return res.status(500).json({
+        error: 'Database configuration error',
+        details: 'Employees table not found. Please ensure the database is properly set up.'
       });
     }
-    
-    res.status(500).json({ 
-      error: 'Authentication failed', 
-      details: error.message 
+
+    res.status(500).json({
+      error: 'Authentication failed',
+      details: error.message
     });
   }
 });
