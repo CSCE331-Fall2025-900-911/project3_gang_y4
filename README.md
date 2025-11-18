@@ -1121,7 +1121,7 @@ This project is developed as part of CSCE 331 coursework at Texas A&M University
 
 ## 👨‍💻 Team
 
-**Team gang_y4** - CSCE 331 Fall 2024
+**Team gang_y4** - CSCE 331 Fall 2025
 
 For questions or issues, please contact the team lead or post in the team Discord channel.
 
