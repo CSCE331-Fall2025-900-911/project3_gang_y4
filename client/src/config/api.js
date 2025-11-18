@@ -14,7 +14,10 @@ export const API_ENDPOINTS = {
   
   // Orders
   ORDERS: `${API_URL}/api/orders`,
-  
+  ORDERS_CUSTOMER_HISTORY: (customerId) => `${API_URL}/api/orders/customer/${customerId}`,
+  ORDERS_RECENT: `${API_URL}/api/orders/recent`,
+  ORDERS_SEARCH: `${API_URL}/api/orders/search`,
+
   // Auth
   AUTH_GOOGLE: `${API_URL}/api/auth/google`,
   AUTH_EMPLOYEE: `${API_URL}/api/auth/employee`,

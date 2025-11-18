@@ -1,5 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import CheckoutInterface from './CheckoutInterface';
+import { API_ENDPOINTS } from '../config/api';
 import '../styles/ManagerView.css';
 
 function ManagerView({ user, onLogout }) {
@@ -407,54 +408,329 @@ function MenuTab() {
   );
 }
 
-// Orders View Tab
+// Orders View Tab with Search
 function OrdersTab() {
   const [orders, setOrders] = useState([]);
   const [loading, setLoading] = useState(true);
+  const [searchOrderId, setSearchOrderId] = useState('');
+  const [searchCustomer, setSearchCustomer] = useState('');
+  const [searchEmployee, setSearchEmployee] = useState('');
+  const [expandedOrder, setExpandedOrder] = useState(null);
+
+  console.log('🔍 OrdersTab rendering, orders count:', orders.length, 'loading:', loading);
 
   useEffect(() => {
+    console.log('🔍 OrdersTab mounted, fetching orders...');
     fetchOrders();
   }, []);
 
   const fetchOrders = async () => {
     try {
-      const res = await fetch('/api/sales');
-      const data = await res.json();
-      setOrders(data);
+      setLoading(true);
+      console.log('🔍 Fetching orders...');
+
+      // If any search field has a value, use search endpoint
+      if (searchOrderId || searchCustomer || searchEmployee) {
+        const params = new URLSearchParams();
+        if (searchOrderId) params.append('orderId', searchOrderId);
+        if (searchCustomer) params.append('customerUsername', searchCustomer);
+        if (searchEmployee) params.append('employeeUsername', searchEmployee);
+
+        console.log('🔍 Using search endpoint with params:', params.toString());
+        const res = await fetch(`${API_ENDPOINTS.ORDERS_SEARCH}?${params}`);
+
+        if (!res.ok) {
+          console.error('❌ Search API error:', res.status, res.statusText);
+          throw new Error(`HTTP ${res.status}: ${res.statusText}`);
+        }
+
+        const data = await res.json();
+        console.log('✅ Search returned', data.length, 'orders');
+        setOrders(data);
+      } else {
+        // Default: show all recent orders
+        console.log('🔍 Using recent orders endpoint');
+        const res = await fetch(API_ENDPOINTS.ORDERS_RECENT);
+
+        if (!res.ok) {
+          console.error('❌ Recent orders API error:', res.status, res.statusText);
+          throw new Error(`HTTP ${res.status}: ${res.statusText}`);
+        }
+
+        const data = await res.json();
+        console.log('✅ Recent orders returned', data.length, 'orders');
+        setOrders(data);
+      }
     } catch (err) {
-      console.error('Error fetching orders:', err);
+      console.error('❌ Error fetching orders:', err);
+      setOrders([]); // Set empty array on error
     } finally {
       setLoading(false);
+      console.log('🔍 Loading complete');
     }
+  };
+
+  const handleSearch = (e) => {
+    e.preventDefault();
+    fetchOrders();
+  };
+
+  const handleClear = (field) => {
+    if (field === 'orderId') setSearchOrderId('');
+    if (field === 'customer') setSearchCustomer('');
+    if (field === 'employee') setSearchEmployee('');
+    // Trigger re-fetch after clearing
+    setTimeout(() => fetchOrders(), 100);
+  };
+
+  const toggleOrderExpansion = (orderId) => {
+    setExpandedOrder(expandedOrder === orderId ? null : orderId);
+  };
+
+  const getCustomerDisplay = (order) => {
+    if (order.customer_id === 0 || order.customer_id === '0') {
+      return 'Guest';
+    }
+    return order.customer_username || `Customer #${order.customer_id}`;
+  };
+
+  const getEmployeeDisplay = (order) => {
+    if (order.employee_id === 0 || order.employee_id === '0') {
+      return 'Self-Service Kiosk';
+    }
+    if (!order.employee_id) {
+      return 'N/A';
+    }
+    return order.employee_username || `Employee #${order.employee_id}`;
+  };
+
+  const getItemCount = (orderDetails) => {
+    try {
+      const details = typeof orderDetails === 'string'
+        ? JSON.parse(orderDetails)
+        : orderDetails;
+      return details.items?.reduce((sum, item) => sum + (item.quantity || 1), 0) || 0;
+    } catch {
+      return 0;
+    }
+  };
+
+  const getOrderItems = (orderDetails) => {
+    try {
+      const details = typeof orderDetails === 'string'
+        ? JSON.parse(orderDetails)
+        : orderDetails;
+      return details.items || [];
+    } catch {
+      return [];
+    }
+  };
+
+  const formatDateTime = (dateString) => {
+    const date = new Date(dateString);
+    return date.toLocaleString('en-US', {
+      month: 'short',
+      day: 'numeric',
+      year: 'numeric',
+      hour: 'numeric',
+      minute: '2-digit',
+      hour12: true
+    });
   };
 
   if (loading) return <div className="loading">Loading orders...</div>;
 
   return (
-    <div className="tab-content">
-      <h2>Orders History</h2>
-      <table className="data-table">
-        <thead>
-          <tr>
-            <th>Sale ID</th>
-            <th>Customer ID</th>
-            <th>Employee ID</th>
-            <th>Date</th>
-            <th>Price</th>
-          </tr>
-        </thead>
-        <tbody>
-          {orders.map(order => (
-            <tr key={order.salesid}>
-              <td>{order.salesid}</td>
-              <td>{order.custid}</td>
-              <td>{order.employeeid}</td>
-              <td>{new Date(order.sale_date).toLocaleString()}</td>
-              <td>${parseFloat(order.price).toFixed(2)}</td>
-            </tr>
-          ))}
-        </tbody>
-      </table>
+    <div className="tab-content orders-tab">
+      <h2>Orders Management</h2>
+
+      {/* Search Interface */}
+      <form onSubmit={handleSearch} className="orders-search">
+        <div className="search-field">
+          <label>Search by Order ID</label>
+          <div className="search-input-group">
+            <input
+              type="number"
+              value={searchOrderId}
+              onChange={(e) => setSearchOrderId(e.target.value)}
+              placeholder="Enter order number..."
+            />
+            {searchOrderId && (
+              <button type="button" className="clear-btn" onClick={() => handleClear('orderId')}>
+                ×
+              </button>
+            )}
+          </div>
+        </div>
+
+        <div className="search-field">
+          <label>Search by Customer</label>
+          <div className="search-input-group">
+            <input
+              type="text"
+              value={searchCustomer}
+              onChange={(e) => setSearchCustomer(e.target.value)}
+              placeholder="Enter customer username..."
+            />
+            {searchCustomer && (
+              <button type="button" className="clear-btn" onClick={() => handleClear('customer')}>
+                ×
+              </button>
+            )}
+          </div>
+        </div>
+
+        <div className="search-field">
+          <label>Search by Employee</label>
+          <div className="search-input-group">
+            <input
+              type="text"
+              value={searchEmployee}
+              onChange={(e) => setSearchEmployee(e.target.value)}
+              placeholder="Enter employee username..."
+            />
+            {searchEmployee && (
+              <button type="button" className="clear-btn" onClick={() => handleClear('employee')}>
+                ×
+              </button>
+            )}
+          </div>
+        </div>
+
+        <button type="submit" className="search-btn">Search</button>
+      </form>
+
+      {/* Orders List */}
+      <div className="orders-list">
+        <div className="orders-count">
+          Showing {orders.length} order{orders.length !== 1 ? 's' : ''}
+        </div>
+
+        {orders.length === 0 ? (
+          <div className="no-orders">No orders found</div>
+        ) : (
+          <div className="orders-table-container">
+            {orders.map((order) => (
+              <div key={order.order_id} className="order-row-container">
+                {/* Compact View */}
+                <div
+                  className={`order-row ${expandedOrder === order.order_id ? 'expanded' : ''}`}
+                  onClick={() => toggleOrderExpansion(order.order_id)}
+                >
+                  <div className="order-cell order-id">
+                    <span className="cell-label">Order ID:</span>
+                    <span className="cell-value">#{order.order_id}</span>
+                  </div>
+                  <div className="order-cell order-date">
+                    <span className="cell-label">Date:</span>
+                    <span className="cell-value">{formatDateTime(order.order_date)}</span>
+                  </div>
+                  <div className="order-cell order-customer">
+                    <span className="cell-label">Customer:</span>
+                    <span className="cell-value">{getCustomerDisplay(order)}</span>
+                  </div>
+                  <div className="order-cell order-employee">
+                    <span className="cell-label">Employee:</span>
+                    <span className="cell-value">{getEmployeeDisplay(order)}</span>
+                  </div>
+                  <div className="order-cell order-total">
+                    <span className="cell-label">Total:</span>
+                    <span className="cell-value total-amount">${parseFloat(order.total || 0).toFixed(2)}</span>
+                  </div>
+                  <div className="order-cell order-items-count">
+                    <span className="cell-label">Items:</span>
+                    <span className="cell-value">{getItemCount(order.order_details)}</span>
+                  </div>
+                  <div className="order-cell order-payment">
+                    <span className="cell-label">Payment:</span>
+                    <span className="cell-value">{order.payment_method === 'cash' ? '💵 Cash' : '💳 Card'}</span>
+                  </div>
+                  <div className="order-cell order-expand">
+                    <span className="expand-icon">{expandedOrder === order.order_id ? '▼' : '▶'}</span>
+                  </div>
+                </div>
+
+                {/* Expanded Details */}
+                {expandedOrder === order.order_id && (
+                  <div className="order-details">
+                    <h3>Order #{order.order_id} Details</h3>
+                    <div className="order-details-grid">
+                      <div className="details-section">
+                        <h4>Items</h4>
+                        {getOrderItems(order.order_details).map((item, idx) => (
+                          <div key={idx} className="detail-item">
+                            <div className="item-header">
+                              <span className="item-name">{item.name}</span>
+                              <span className="item-price">${(item.item_total || 0).toFixed(2)}</span>
+                            </div>
+                            <div className="item-info">
+                              <span>Qty: {item.quantity || 1}</span>
+                              <span>Base: ${(item.base_price || 0).toFixed(2)}</span>
+                            </div>
+                            {item.customizations && item.customizations.length > 0 && (
+                              <div className="item-customizations">
+                                {item.customizations.map((custom, cidx) => (
+                                  <div key={cidx} className="customization">
+                                    <span>{custom.name}</span>
+                                    {custom.price > 0 && <span>+${custom.price.toFixed(2)}</span>}
+                                  </div>
+                                ))}
+                              </div>
+                            )}
+                          </div>
+                        ))}
+                      </div>
+
+                      <div className="details-section">
+                        <h4>Order Summary</h4>
+                        <div className="summary-row">
+                          <span>Subtotal:</span>
+                          <span>${parseFloat(order.subtotal || 0).toFixed(2)}</span>
+                        </div>
+                        <div className="summary-row">
+                          <span>Tax:</span>
+                          <span>${parseFloat(order.tax || 0).toFixed(2)}</span>
+                        </div>
+                        <div className="summary-row total">
+                          <span>Total:</span>
+                          <span>${parseFloat(order.total || 0).toFixed(2)}</span>
+                        </div>
+                        <div className="summary-row">
+                          <span>Payment Method:</span>
+                          <span>{order.payment_method === 'cash' ? '💵 Cash' : '💳 Card'}</span>
+                        </div>
+                        <div className="summary-row">
+                          <span>Status:</span>
+                          <span>{order.order_status || 'Completed'}</span>
+                        </div>
+                        {(() => {
+                          try {
+                            const details = typeof order.order_details === 'string'
+                              ? JSON.parse(order.order_details)
+                              : order.order_details;
+                            const notes = details?.order_notes || '';
+                            if (notes.trim()) {
+                              return (
+                                <div className="summary-row order-notes-display">
+                                  <span>Order Notes:</span>
+                                  <span className="notes-text">{notes}</span>
+                                </div>
+                              );
+                            }
+                          } catch {
+                            return null;
+                          }
+                          return null;
+                        })()}
+                      </div>
+                    </div>
+                  </div>
+                )}
+              </div>
+            ))}
+          </div>
+        )}
+      </div>
     </div>
   );
 }
