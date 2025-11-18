@@ -2,7 +2,9 @@ import React, { useState, useEffect } from 'react';
 import { API_ENDPOINTS } from '../config/api';
 import '../styles/CustomizationModal.css';
 
-function CustomizationModal({ item, onClose, onConfirm, existingCustomizations = null }) {
+function CustomizationModal({ item, onClose, onCancel, onConfirm, existingCustomizations = null }) {
+    // Support both onClose and onCancel props for compatibility
+    const handleClose = onClose || onCancel;
     const [addons, setAddons] = useState([]);
     const [customizations, setCustomizations] = useState({ ice: [], sweetness: [], size: [] });
     const [loading, setLoading] = useState(true);
@@ -126,17 +128,26 @@ function CustomizationModal({ item, onClose, onConfirm, existingCustomizations =
             if (sweet) allCustomizations.push({ id: sweet.id, name: sweet.name, price: sweet.price });
         }
 
+        // Create display name with customizations
+        let displayName = item.name;
+        if (allCustomizations.length > 0) {
+            displayName = `${item.name}`;
+        }
+
         onConfirm({
-            ...item,
+            id: item.id,
+            name: item.name,
+            displayName: displayName,
+            price: item.price,
             quantity,
             customizations: allCustomizations,
-            itemTotal: parseFloat(calculateTotal())
+            totalPrice: parseFloat(calculateTotal())
         });
     };
 
     if (loading) {
         return (
-            <div className="modal-overlay" onClick={onClose}>
+            <div className="modal-overlay" onClick={handleClose}>
                 <div className="modal-content" onClick={(e) => e.stopPropagation()}>
                     <div style={{ textAlign: 'center', padding: '20px' }}>
                         <div className="loading-spinner" style={{ margin: '0 auto 20px' }}></div>
@@ -151,9 +162,9 @@ function CustomizationModal({ item, onClose, onConfirm, existingCustomizations =
     const hasOptions = addons.length > 0 || customizations.ice.length > 0 || customizations.sweetness.length > 0 || customizations.size.length > 0;
 
     return (
-        <div className="modal-overlay" onClick={onClose}>
+        <div className="modal-overlay" onClick={handleClose}>
             <div className="modal-content customization-modal" onClick={(e) => e.stopPropagation()}>
-                <button className="modal-close" onClick={onClose}>×</button>
+                <button className="modal-close" onClick={handleClose}>×</button>
 
                 <h2>Customize Your Drink</h2>
                 <h3 className="item-name">{item.name}</h3>
