@@ -1159,15 +1159,15 @@ function TrendsTab() {
     }
 
     if (granularity === 'day') {
-      return new Date(period).toLocaleDateString('en-US', { month: 'short', day: 'numeric' });
+      return new Date(period).toLocaleDateString('en-US', { month: 'short', day: 'numeric', timeZone: 'UTC' });
     }
 
     if (granularity === 'week') {
-      return `Week of ${new Date(period).toLocaleDateString('en-US', { month: 'short', day: 'numeric' })}`;
+      return `Week of ${new Date(period).toLocaleDateString('en-US', { month: 'short', day: 'numeric', timeZone: 'UTC' })}`;
     }
 
     if (granularity === 'month') {
-      return new Date(period + '-01').toLocaleDateString('en-US', { month: 'short', year: 'numeric' });
+      return new Date(period + '-01').toLocaleDateString('en-US', { month: 'short', year: 'numeric', timeZone: 'UTC' });
     }
 
     return period;
@@ -1588,7 +1588,7 @@ function XReportTab() {
                   ))
                 ) : (
                   <tr>
-                    <td colSpan="3" style={{textAlign: 'center'}}>No payment data</td>
+                    <td colSpan="3" style={{ textAlign: 'center' }}>No payment data</td>
                   </tr>
                 )}
               </tbody>
@@ -1617,7 +1617,7 @@ function XReportTab() {
                   ))
                 ) : (
                   <tr>
-                    <td colSpan="3" style={{textAlign: 'center'}}>No items sold</td>
+                    <td colSpan="3" style={{ textAlign: 'center' }}>No items sold</td>
                   </tr>
                 )}
               </tbody>
@@ -1671,7 +1671,7 @@ function XReportTab() {
                   ))
                 ) : (
                   <tr>
-                    <td colSpan="3" style={{textAlign: 'center'}}>No employee data</td>
+                    <td colSpan="3" style={{ textAlign: 'center' }}>No employee data</td>
                   </tr>
                 )}
               </tbody>
