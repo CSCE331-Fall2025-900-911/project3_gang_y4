@@ -433,15 +433,48 @@
   font-size: 1.5rem;
 }
 
-.checkout-button {
+.checkout-buttons {
+  display: flex;
+  gap: 1rem;
   width: 100%;
-  background: #4caf50;
+}
+
+.cancel-button {
+  flex: 1;
+  background: #dc2626;
   color: white;
-  padding: 16px;
-  border-radius: 10px;
-  font-size: 1.1rem;
+  padding: 18px;
+  border-radius: 12px;
+  font-size: 1.2rem;
   font-weight: 700;
   transition: all 0.3s ease;
+  border: none;
+  cursor: pointer;
+}
+
+.cancel-button:hover:not(:disabled) {
+  background: #b91c1c;
+  transform: translateY(-2px);
+  box-shadow: 0 6px 20px rgba(220, 38, 38, 0.3);
+}
+
+.cancel-button:disabled {
+  background: #d1d5db;
+  cursor: not-allowed;
+  opacity: 0.6;
+}
+
+.checkout-button {
+  flex: 1;
+  background: #4caf50;
+  color: white;
+  padding: 18px;
+  border-radius: 12px;
+  font-size: 1.2rem;
+  font-weight: 700;
+  transition: all 0.3s ease;
+  border: none;
+  cursor: pointer;
 }
 
 .checkout-button:hover:not(:disabled) {
@@ -451,7 +484,9 @@
 }
 
 .checkout-button:disabled {
-  background: #cccccc;
+  background: #d1d5db;
+  cursor: not-allowed;
+  opacity: 0.6;
 }
 
 /* Scrollbar Styling */

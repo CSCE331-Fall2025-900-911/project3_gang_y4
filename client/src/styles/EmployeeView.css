@@ -344,16 +344,16 @@
   color: #95a5a6;
 }
 
-.cart-actions {
+.checkout-buttons {
   padding: 1rem;
   display: flex;
-  gap: 0.75rem;
+  gap: 1rem;
   border-top: 1px solid #e0e0e0;
+  flex-shrink: 0;
 }
 
-.btn-clear,
-.btn-checkout {
-  flex-shrink: 0; /* Keep checkout button fixed at bottom */
+.btn-cancel {
+  flex: 1;
   padding: 1.25rem;
   border: none;
   border-radius: 8px;
@@ -361,25 +361,66 @@
   font-weight: 600;
   cursor: pointer;
   transition: all 0.2s;
-  width: 100%; /* Full width of cart section */
+  background-color: #dc2626;
+  color: white;
+}
+
+.btn-cancel:hover:not(:disabled) {
+  background-color: #b91c1c;
+}
+
+.btn-cancel:disabled {
+  background-color: #d1d5db;
+  cursor: not-allowed;
+  opacity: 0.6;
+}
+
+.btn-checkout {
+  flex: 1;
+  padding: 1.25rem;
+  border: none;
+  border-radius: 8px;
+  font-size: 1.1rem;
+  font-weight: 600;
+  cursor: pointer;
+  transition: all 0.2s;
+  background-color: #27ae60;
+  color: white;
+}
+
+.btn-checkout:hover:not(:disabled) {
+  background-color: #229954;
+}
+
+.btn-checkout:disabled {
+  background-color: #d1d5db;
+  cursor: not-allowed;
+  opacity: 0.6;
+}
+
+.cart-actions {
+  padding: 1rem;
+  display: flex;
+  gap: 0.75rem;
+  border-top: 1px solid #e0e0e0;
 }
 
 .btn-clear {
+  flex-shrink: 0;
+  padding: 1.25rem;
+  border: none;
+  border-radius: 8px;
+  font-size: 1.1rem;
+  font-weight: 600;
+  cursor: pointer;
+  transition: all 0.2s;
+  width: 100%;
   background-color: #95a5a6;
   color: white;
 }
 
 .btn-clear:hover {
   background-color: #7f8c8d;
-}
-
-.btn-checkout {
-  background-color: #27ae60;
-  color: white;
-}
-
-.btn-checkout:hover {
-  background-color: #229954;
 }
 
 /* Loading and Error States */

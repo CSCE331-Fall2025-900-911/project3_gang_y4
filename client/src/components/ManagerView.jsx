@@ -56,10 +56,10 @@ function ManagerView({ user, onLogout }) {
           Trends
         </button>
         <button
-          className={`tab-btn ${activeTab === 'zreport' ? 'active' : ''}`}
-          onClick={() => setActiveTab('zreport')}
+          className={`tab-btn ${activeTab === 'xreport' ? 'active' : ''}`}
+          onClick={() => setActiveTab('xreport')}
         >
-          Z-Report
+          X Report
         </button>
       </nav>
 
@@ -70,7 +70,7 @@ function ManagerView({ user, onLogout }) {
         {activeTab === 'menu' && <MenuTab />}
         {activeTab === 'orders' && <OrdersTab />}
         {activeTab === 'trends' && <TrendsTab />}
-        {activeTab === 'zreport' && <ZReportTab />}
+        {activeTab === 'xreport' && <XReportTab />}
       </main>
     </div>
   );
@@ -78,24 +78,29 @@ function ManagerView({ user, onLogout }) {
 
 // Inventory Management Tab
 function InventoryTab() {
+  console.log('🔍 Inventory tab rendering');
   const [inventory, setInventory] = useState([]);
   const [loading, setLoading] = useState(true);
   const [editing, setEditing] = useState(null);
   const [formData, setFormData] = useState({ item_name: '', quantity: '' });
 
   useEffect(() => {
+    console.log('🔍 Inventory tab mounted, fetching data...');
     fetchInventory();
   }, []);
 
   const fetchInventory = async () => {
     try {
+      console.log('🔍 Fetching inventory from API...');
       const res = await fetch('/api/inventory');
       const data = await res.json();
+      console.log('🔍 Inventory data received:', data);
       setInventory(data);
     } catch (err) {
-      console.error('Error fetching inventory:', err);
+      console.error('❌ Error fetching inventory:', err);
     } finally {
       setLoading(false);
+      console.log('🔍 Inventory loading complete');
     }
   };
 
@@ -138,7 +143,16 @@ function InventoryTab() {
     }
   };
 
-  if (loading) return <div className="loading">Loading inventory...</div>;
+  if (loading) {
+    console.log('🔍 Showing loading state...');
+    return (
+      <div className="tab-content">
+        <div className="loading">Loading inventory...</div>
+      </div>
+    );
+  }
+
+  console.log('🔍 Rendering inventory table with', inventory.length, 'items');
 
   return (
     <div className="tab-content">
@@ -299,27 +313,275 @@ function EmployeesTab() {
   );
 }
 
+// Dependency Editor Modal Component
+function DependencyEditorModal({ menuItem, dependencies, onClose, onSave }) {
+  const [availableIngredients, setAvailableIngredients] = useState([]);
+  const [currentDependencies, setCurrentDependencies] = useState(dependencies);
+  const [selectedIngredient, setSelectedIngredient] = useState('');
+  const [quantity, setQuantity] = useState('');
+  const [loading, setLoading] = useState(false);
+  const [message, setMessage] = useState({ type: '', text: '' });
+
+  useEffect(() => {
+    fetchAvailableIngredients();
+  }, []);
+
+  const fetchAvailableIngredients = async () => {
+    try {
+      const res = await fetch('/api/inventory');
+      const data = await res.json();
+      setAvailableIngredients(data);
+    } catch (err) {
+      console.error('Error fetching ingredients:', err);
+      setMessage({ type: 'error', text: 'Failed to load ingredients' });
+    }
+  };
+
+  const handleAddDependency = async () => {
+    if (!selectedIngredient || !quantity) {
+      setMessage({ type: 'error', text: 'Please select an ingredient and enter quantity' });
+      return;
+    }
+
+    if (parseFloat(quantity) <= 0) {
+      setMessage({ type: 'error', text: 'Quantity must be greater than 0' });
+      return;
+    }
+
+    // Check if dependency already exists
+    const exists = currentDependencies.some(dep => dep.inventory_id === parseInt(selectedIngredient));
+    if (exists) {
+      setMessage({ type: 'error', text: 'This ingredient is already added. Remove it first to change the quantity.' });
+      return;
+    }
+
+    setLoading(true);
+    setMessage({ type: '', text: '' });
+
+    try {
+      const res = await fetch(`/api/menu/${menuItem.menuid}/dependencies`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          inventory_id: parseInt(selectedIngredient),
+          quantity_needed: parseFloat(quantity)
+        })
+      });
+
+      if (!res.ok) {
+        const error = await res.json();
+        throw new Error(error.error || 'Failed to add dependency');
+      }
+
+      // Refresh dependencies
+      const depsRes = await fetch(`/api/menu/${menuItem.menuid}/dependencies`);
+      const depsData = await depsRes.json();
+      setCurrentDependencies(depsData.dependencies);
+
+      setSelectedIngredient('');
+      setQuantity('');
+      setMessage({ type: 'success', text: 'Ingredient added successfully!' });
+    } catch (err) {
+      console.error('Error adding dependency:', err);
+      setMessage({ type: 'error', text: err.message });
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  const handleRemoveDependency = async (inventoryId) => {
+    if (!confirm('Remove this ingredient from the menu item?')) return;
+
+    setLoading(true);
+    setMessage({ type: '', text: '' });
+
+    try {
+      const res = await fetch(`/api/menu/${menuItem.menuid}/dependencies/${inventoryId}`, {
+        method: 'DELETE'
+      });
+
+      if (!res.ok) {
+        const error = await res.json();
+        throw new Error(error.error || 'Failed to remove dependency');
+      }
+
+      // Refresh dependencies
+      const depsRes = await fetch(`/api/menu/${menuItem.menuid}/dependencies`);
+      const depsData = await depsRes.json();
+      setCurrentDependencies(depsData.dependencies);
+
+      setMessage({ type: 'success', text: 'Ingredient removed successfully!' });
+    } catch (err) {
+      console.error('Error removing dependency:', err);
+      setMessage({ type: 'error', text: err.message });
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  const getIngredientName = (inventoryId) => {
+    const ingredient = availableIngredients.find(ing => ing.ingredientid === inventoryId);
+    return ingredient ? ingredient.item_name : 'Unknown';
+  };
+
+  return (
+    <div className="modal-overlay" onClick={onClose}>
+      <div className="modal-content dependency-editor-modal" onClick={(e) => e.stopPropagation()}>
+        <div className="modal-header">
+          <h2>Edit Dependencies: {menuItem.menu_name}</h2>
+          <button className="close-button" onClick={onClose}>&times;</button>
+        </div>
+
+        <div className="modal-body">
+          {message.text && (
+            <div className={`message ${message.type}`}>
+              {message.text}
+            </div>
+          )}
+
+          <div className="current-dependencies">
+            <h3>Current Ingredients:</h3>
+            {currentDependencies.length === 0 ? (
+              <p className="no-dependencies-message">⚠️ No ingredients assigned. This menu item won't track inventory.</p>
+            ) : (
+              <ul className="dependencies-list">
+                {currentDependencies.map(dep => (
+                  <li key={dep.inventory_id} className="dependency-item">
+                    <span className="dependency-info">
+                      <strong>{dep.name}</strong> - {dep.quantity_needed}g
+                    </span>
+                    <button
+                      className="btn-remove"
+                      onClick={() => handleRemoveDependency(dep.inventory_id)}
+                      disabled={loading}
+                    >
+                      Remove
+                    </button>
+                  </li>
+                ))}
+              </ul>
+            )}
+          </div>
+
+          <div className="add-dependency">
+            <h3>Add Ingredient:</h3>
+            <div className="add-dependency-form">
+              <select
+                value={selectedIngredient}
+                onChange={(e) => setSelectedIngredient(e.target.value)}
+                disabled={loading}
+              >
+                <option value="">Select Ingredient</option>
+                {availableIngredients.map(ing => (
+                  <option key={ing.ingredientid} value={ing.ingredientid}>
+                    {ing.item_name} (Stock: {ing.quantity})
+                  </option>
+                ))}
+              </select>
+              <input
+                type="number"
+                step="0.01"
+                min="0.01"
+                placeholder="Quantity (g)"
+                value={quantity}
+                onChange={(e) => setQuantity(e.target.value)}
+                disabled={loading}
+              />
+              <button
+                className="btn-add"
+                onClick={handleAddDependency}
+                disabled={loading}
+              >
+                {loading ? 'Adding...' : 'Add'}
+              </button>
+            </div>
+          </div>
+        </div>
+
+        <div className="modal-footer">
+          <button className="btn-cancel" onClick={onClose}>Close</button>
+          <button className="btn-save" onClick={onSave}>Save & Refresh</button>
+        </div>
+      </div>
+    </div>
+  );
+}
+
 // Menu Items Management Tab
 function MenuTab() {
+  console.log('🍜 MenuTab rendering');
   const [menu, setMenu] = useState([]);
   const [loading, setLoading] = useState(true);
   const [editing, setEditing] = useState(null);
   const [formData, setFormData] = useState({ menu_name: '', price: '', item_type: 'Tea' });
+  const [editingDependencies, setEditingDependencies] = useState(null);
+  const [dependencies, setDependencies] = useState({});
+  const [fetchTrigger, setFetchTrigger] = useState(0);
 
+  // Fetch menu and dependencies on mount and when fetchTrigger changes
   useEffect(() => {
-    fetchMenu();
-  }, []);
+    console.log('🍜 MenuTab useEffect triggered, fetchTrigger:', fetchTrigger);
+    let isMounted = true;
 
-  const fetchMenu = async () => {
-    try {
-      const res = await fetch('/api/menu');
-      const data = await res.json();
-      setMenu(data);
-    } catch (err) {
-      console.error('Error fetching menu:', err);
-    } finally {
-      setLoading(false);
-    }
+    const loadMenuData = async () => {
+      try {
+        console.log('🍜 Fetching menu items...');
+        setLoading(true);
+        const res = await fetch('/api/menu');
+        const data = await res.json();
+        console.log('🍜 Menu items fetched:', data.length);
+
+        if (!isMounted) return;
+        setMenu(data);
+
+        // Fetch dependencies for all menu items in one batch call (optimized)
+        console.log('🍜 Fetching dependencies (batch)...');
+        try {
+          const depsRes = await fetch('/api/menu/dependencies/batch');
+          const allDeps = await depsRes.json();
+          console.log('🍜 Dependencies fetched in batch for', Object.keys(allDeps).length, 'items');
+
+          if (!isMounted) return;
+
+          // Ensure all menu items have an entry (even if empty array)
+          const depsMap = {};
+          data.forEach(item => {
+            depsMap[item.menuid] = allDeps[item.menuid] || [];
+          });
+
+          setDependencies(depsMap);
+        } catch (depsErr) {
+          console.error('Error fetching batch dependencies:', depsErr);
+          // Fallback: empty dependencies for all items
+          if (isMounted) {
+            const emptyDeps = {};
+            data.forEach(item => {
+              emptyDeps[item.menuid] = [];
+            });
+            setDependencies(emptyDeps);
+          }
+        }
+      } catch (err) {
+        console.error('Error fetching menu:', err);
+      } finally {
+        if (isMounted) {
+          console.log('🍜 Setting loading to false');
+          setLoading(false);
+        }
+      }
+    };
+
+    loadMenuData();
+
+    return () => {
+      console.log('🍜 MenuTab cleanup');
+      isMounted = false;
+    };
+  }, [fetchTrigger]);
+
+  const fetchMenu = () => {
+    console.log('🍜 Triggering menu refresh');
+    setFetchTrigger(prev => prev + 1);
   };
 
   const handleSubmit = async (e) => {
@@ -387,6 +649,7 @@ function MenuTab() {
             <th>Name</th>
             <th>Price</th>
             <th>Type</th>
+            <th>Dependencies</th>
             <th>Actions</th>
           </tr>
         </thead>
@@ -398,13 +661,41 @@ function MenuTab() {
               <td>${parseFloat(item.price).toFixed(2)}</td>
               <td>{item.item_type}</td>
               <td>
+                {dependencies[item.menuid] ? (
+                  <div className="dependencies-preview">
+                    {dependencies[item.menuid].length === 0 ? (
+                      <span className="no-dependencies">⚠️ No ingredients</span>
+                    ) : (
+                      <span className="dependencies-count">
+                        {dependencies[item.menuid].length} ingredient{dependencies[item.menuid].length !== 1 ? 's' : ''}
+                      </span>
+                    )}
+                  </div>
+                ) : (
+                  <span className="loading-deps">Loading...</span>
+                )}
+              </td>
+              <td>
                 <button onClick={() => handleEdit(item)} className="btn-edit">Edit</button>
+                <button onClick={() => setEditingDependencies(item)} className="btn-dependencies">Dependencies</button>
                 <button onClick={() => handleDelete(item.menuid)} className="btn-delete">Delete</button>
               </td>
             </tr>
           ))}
         </tbody>
       </table>
+
+      {editingDependencies && (
+        <DependencyEditorModal
+          menuItem={editingDependencies}
+          dependencies={dependencies[editingDependencies.menuid] || []}
+          onClose={() => setEditingDependencies(null)}
+          onSave={() => {
+            fetchMenu();
+            setEditingDependencies(null);
+          }}
+        />
+      )}
     </div>
   );
 }
@@ -1126,61 +1417,293 @@ function TrendsTab() {
 }
 
 // Z-Report Tab
-function ZReportTab() {
-  const [date, setDate] = useState(new Date().toISOString().split('T')[0]);
-  const [report, setReport] = useState([]);
-  const [loading, setLoading] = useState(false);
+// X Report Tab - Mid-shift sales summary
+function XReportTab() {
+  console.log('📊 X Report tab rendering');
 
-  const fetchReport = async () => {
+  // Get current date and time
+  const now = new Date();
+  const todayDate = now.toISOString().split('T')[0];
+  const currentTime = `${now.getHours().toString().padStart(2, '0')}:${now.getMinutes().toString().padStart(2, '0')}`;
+
+  const [reportDate, setReportDate] = useState(todayDate);
+  const [startTime, setStartTime] = useState('09:00');
+  const [endTime, setEndTime] = useState(currentTime);
+  const [report, setReport] = useState(null);
+  const [loading, setLoading] = useState(false);
+  const [error, setError] = useState('');
+
+  const generateReport = async () => {
     setLoading(true);
+    setError('');
+    console.log(`📊 Generating X Report for ${reportDate} ${startTime} to ${endTime}`);
+
     try {
-      const res = await fetch(`/api/analytics/zreport?date=${date}`);
+      const res = await fetch(`/api/reports/x?date=${reportDate}&startTime=${startTime}&endTime=${endTime}`);
+
+      if (!res.ok) {
+        const errorData = await res.json();
+        throw new Error(errorData.error || 'Failed to generate report');
+      }
+
       const data = await res.json();
+      console.log('📊 X Report data received:', data);
       setReport(data);
     } catch (err) {
-      console.error('Error fetching Z-Report:', err);
+      console.error('❌ Error fetching X Report:', err);
+      setError(err.message || 'Failed to generate report');
     } finally {
       setLoading(false);
     }
   };
 
-  useEffect(() => {
-    fetchReport();
-  }, [date]);
+  const formatCurrency = (amount) => {
+    return new Intl.NumberFormat('en-US', {
+      style: 'currency',
+      currency: 'USD',
+      minimumFractionDigits: 2
+    }).format(amount || 0);
+  };
 
-  const total = report.reduce((sum, r) => sum + parseFloat(r.total_sales || 0), 0);
+  const formatDateTime = (dateStr) => {
+    const date = new Date(dateStr);
+    return date.toLocaleString('en-US', {
+      timeZone: 'America/Chicago',
+      month: 'short',
+      day: 'numeric',
+      year: 'numeric',
+      hour: 'numeric',
+      minute: '2-digit',
+      hour12: true
+    });
+  };
+
+  if (loading) {
+    return (
+      <div className="tab-content">
+        <div className="loading">Generating X Report...</div>
+      </div>
+    );
+  }
 
   return (
     <div className="tab-content">
-      <h2>Z-Report (End of Day)</h2>
-      <div className="controls">
-        <label>Date: </label>
-        <input type="date" value={date} onChange={(e) => setDate(e.target.value)} />
+      <h2>X Report - Mid-Shift Sales Summary</h2>
+
+      <div className="report-controls">
+        <div className="control-group">
+          <label>Report Date:</label>
+          <input
+            type="date"
+            value={reportDate}
+            onChange={(e) => setReportDate(e.target.value)}
+            max={todayDate}
+          />
+        </div>
+
+        <div className="control-group">
+          <label>Start Time:</label>
+          <input
+            type="time"
+            value={startTime}
+            onChange={(e) => setStartTime(e.target.value)}
+          />
+        </div>
+
+        <div className="control-group">
+          <label>End Time:</label>
+          <input
+            type="time"
+            value={endTime}
+            onChange={(e) => setEndTime(e.target.value)}
+          />
+        </div>
+
+        <button className="btn-generate-report" onClick={generateReport}>
+          Generate Report
+        </button>
       </div>
-      {loading ? <div className="loading">Loading...</div> : (
-        <>
-          <table className="data-table">
-            <thead>
-              <tr>
-                <th>Employee ID</th>
-                <th>Sales Count</th>
-                <th>Total Sales</th>
-              </tr>
-            </thead>
-            <tbody>
-              {report.map((row, idx) => (
-                <tr key={idx}>
-                  <td>{row.employeeid}</td>
-                  <td>{row.sales_count}</td>
-                  <td>${parseFloat(row.total_sales).toFixed(2)}</td>
-                </tr>
-              ))}
-            </tbody>
-          </table>
-          <div className="report-summary">
-            <strong>Total for Day: ${total.toFixed(2)}</strong>
+
+      {error && (
+        <div className="error-message">
+          ❌ {error}
+        </div>
+      )}
+
+      {report && (
+        <div className="x-report-display">
+          {/* Report Header */}
+          <div className="report-header">
+            <h3>X REPORT</h3>
+            <p><strong>Generated:</strong> {formatDateTime(report.generated_at)}</p>
+            <p><strong>Period:</strong> {report.period.start} to {report.period.end}</p>
           </div>
-        </>
+
+          {/* Sales Summary */}
+          <div className="report-section">
+            <h4>Sales Summary</h4>
+            <div className="summary-grid">
+              <div className="summary-item">
+                <span className="label">Total Orders:</span>
+                <span className="value">{report.sales_summary.total_orders}</span>
+              </div>
+              <div className="summary-item">
+                <span className="label">Total Items Sold:</span>
+                <span className="value">{report.sales_summary.total_items_sold}</span>
+              </div>
+              <div className="summary-item">
+                <span className="label">Gross Sales:</span>
+                <span className="value">{formatCurrency(report.sales_summary.gross_sales)}</span>
+              </div>
+              <div className="summary-item">
+                <span className="label">Sales Tax:</span>
+                <span className="value">{formatCurrency(report.sales_summary.sales_tax)}</span>
+              </div>
+              <div className="summary-item highlight">
+                <span className="label">Net Sales:</span>
+                <span className="value">{formatCurrency(report.sales_summary.net_sales)}</span>
+              </div>
+            </div>
+          </div>
+
+          {/* Payment Methods */}
+          <div className="report-section">
+            <h4>Payment Methods</h4>
+            <table className="data-table">
+              <thead>
+                <tr>
+                  <th>Method</th>
+                  <th>Transactions</th>
+                  <th>Amount</th>
+                </tr>
+              </thead>
+              <tbody>
+                {report.payment_methods.length > 0 ? (
+                  report.payment_methods.map((pm, idx) => (
+                    <tr key={idx}>
+                      <td>{pm.method}</td>
+                      <td>{pm.count}</td>
+                      <td>{formatCurrency(pm.amount)}</td>
+                    </tr>
+                  ))
+                ) : (
+                  <tr>
+                    <td colSpan="3" style={{textAlign: 'center'}}>No payment data</td>
+                  </tr>
+                )}
+              </tbody>
+            </table>
+          </div>
+
+          {/* Top Selling Items */}
+          <div className="report-section">
+            <h4>Top Selling Items</h4>
+            <table className="data-table">
+              <thead>
+                <tr>
+                  <th>Item Name</th>
+                  <th>Quantity Sold</th>
+                  <th>Revenue</th>
+                </tr>
+              </thead>
+              <tbody>
+                {report.top_items.length > 0 ? (
+                  report.top_items.map((item, idx) => (
+                    <tr key={idx}>
+                      <td>{item.item_name}</td>
+                      <td>{item.quantity}</td>
+                      <td>{formatCurrency(item.revenue)}</td>
+                    </tr>
+                  ))
+                ) : (
+                  <tr>
+                    <td colSpan="3" style={{textAlign: 'center'}}>No items sold</td>
+                  </tr>
+                )}
+              </tbody>
+            </table>
+          </div>
+
+          {/* Sales by Hour */}
+          {report.sales_by_hour.length > 0 && (
+            <div className="report-section">
+              <h4>Sales by Hour</h4>
+              <table className="data-table">
+                <thead>
+                  <tr>
+                    <th>Hour</th>
+                    <th>Orders</th>
+                    <th>Revenue</th>
+                  </tr>
+                </thead>
+                <tbody>
+                  {report.sales_by_hour.map((hour, idx) => (
+                    <tr key={idx}>
+                      <td>{hour.hour}:00</td>
+                      <td>{hour.orders}</td>
+                      <td>{formatCurrency(hour.revenue)}</td>
+                    </tr>
+                  ))}
+                </tbody>
+              </table>
+            </div>
+          )}
+
+          {/* Sales by Employee */}
+          <div className="report-section">
+            <h4>Sales by Employee</h4>
+            <table className="data-table">
+              <thead>
+                <tr>
+                  <th>Employee</th>
+                  <th>Orders</th>
+                  <th>Total Sales</th>
+                </tr>
+              </thead>
+              <tbody>
+                {report.sales_by_employee.length > 0 ? (
+                  report.sales_by_employee.map((emp, idx) => (
+                    <tr key={idx}>
+                      <td>{emp.employee}</td>
+                      <td>{emp.orders}</td>
+                      <td>{formatCurrency(emp.sales)}</td>
+                    </tr>
+                  ))
+                ) : (
+                  <tr>
+                    <td colSpan="3" style={{textAlign: 'center'}}>No employee data</td>
+                  </tr>
+                )}
+              </tbody>
+            </table>
+          </div>
+
+          {/* Customer Statistics */}
+          <div className="report-section">
+            <h4>Customer Statistics</h4>
+            <div className="summary-grid">
+              <div className="summary-item">
+                <span className="label">Guest Orders:</span>
+                <span className="value">{report.customer_statistics.guest_orders}</span>
+              </div>
+              <div className="summary-item">
+                <span className="label">Registered Customer Orders:</span>
+                <span className="value">{report.customer_statistics.registered_orders}</span>
+              </div>
+              <div className="summary-item">
+                <span className="label">Rewards Points Earned:</span>
+                <span className="value">{report.customer_statistics.rewards_points_earned}</span>
+              </div>
+            </div>
+          </div>
+
+          {/* Print Actions */}
+          <div className="report-actions">
+            <button className="btn-print" onClick={() => window.print()}>
+              Print Report
+            </button>
+          </div>
+        </div>
       )}
     </div>
   );
