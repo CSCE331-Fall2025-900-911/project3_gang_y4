@@ -820,6 +820,34 @@ router.get('/customers/:id', async (req, res) => {
 - **Constants**: UPPER_SNAKE_CASE (`API_ENDPOINTS`)
 - **CSS Classes**: kebab-case (`customer-kiosk`, `cart-section`)
 
+### Timezone Handling
+
+The application handles timezones in a specific way to ensure consistent reporting across the stack:
+
+1.  **Database (PostgreSQL)**:
+    *   Timestamps (e.g., `order_date`) are stored as `timestamp without time zone`.
+    *   **Convention**: All times stored are **CST/CDT (America/Chicago)** wall-clock time.
+    *   *Example*: An order placed at 6:00 PM CST is stored as `2025-11-18 18:00:00`.
+
+2.  **Backend (Node/Express)**:
+    *   Queries should **not** apply timezone conversions (e.g., avoid `AT TIME ZONE 'America/Chicago'`) when filtering by date.
+    *   Since the data is already in local time, applying a timezone conversion shifts it to UTC, causing "off-by-one-day" errors in reports.
+    *   *Correct*: `WHERE order_date >= '2025-11-18'`
+    *   *Incorrect*: `WHERE order_date AT TIME ZONE 'America/Chicago' >= ...`
+
+3.  **Frontend (React)**:
+    *   The API returns date strings like `"2025-11-18"`.
+    *   **Parsing**: JavaScript parses date-only strings as **UTC Midnight** (`2025-11-18T00:00:00Z`).
+    *   **Formatting**: To prevent the browser from converting this back to local time (which would shift it to the previous day, e.g., "Nov 17"), you must force UTC formatting.
+    *   *Code Example*:
+        ```javascript
+        new Date(dateString).toLocaleDateString('en-US', {
+          month: 'short',
+          day: 'numeric',
+          timeZone: 'UTC' // CRITICAL: Prevents shift to local time
+        });
+        ```
+
 ### Debugging
 
 #### Frontend Debugging
