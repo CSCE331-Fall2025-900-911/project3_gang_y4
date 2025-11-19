@@ -85,48 +85,48 @@ router.get('/sales', async (req, res) => {
         if (granularity === 'hour') {
           sqlQuery = `
             SELECT
-              EXTRACT(HOUR FROM order_date AT TIME ZONE 'America/Chicago') as period,
+              EXTRACT(HOUR FROM order_date) as period,
               SUM(${getItemQuantitySql()}) as value
             FROM sales_orders
-            WHERE DATE(order_date AT TIME ZONE 'America/Chicago') = $1
+            WHERE DATE(order_date) = $1
               ${employeeFilter}
-            GROUP BY EXTRACT(HOUR FROM order_date AT TIME ZONE 'America/Chicago')
+            GROUP BY EXTRACT(HOUR FROM order_date)
             ORDER BY period
           `;
         } else if (granularity === 'day') {
           sqlQuery = `
             SELECT
-              TO_CHAR(order_date AT TIME ZONE 'America/Chicago', 'YYYY-MM-DD') as period,
+              TO_CHAR(order_date, 'YYYY-MM-DD') as period,
               SUM(${getItemQuantitySql()}) as value
             FROM sales_orders
-            WHERE order_date AT TIME ZONE 'America/Chicago' >= $1::date
-              AND order_date AT TIME ZONE 'America/Chicago' < $2::date + interval '1 day'
+            WHERE order_date >= $1::date
+              AND order_date < $2::date + interval '1 day'
               ${employeeFilter}
-            GROUP BY TO_CHAR(order_date AT TIME ZONE 'America/Chicago', 'YYYY-MM-DD')
+            GROUP BY TO_CHAR(order_date, 'YYYY-MM-DD')
             ORDER BY period
           `;
         } else if (granularity === 'week') {
           sqlQuery = `
             SELECT
-              TO_CHAR(DATE_TRUNC('week', order_date AT TIME ZONE 'America/Chicago'), 'YYYY-MM-DD') as period,
+              TO_CHAR(DATE_TRUNC('week', order_date), 'YYYY-MM-DD') as period,
               SUM(${getItemQuantitySql()}) as value
             FROM sales_orders
-            WHERE order_date AT TIME ZONE 'America/Chicago' >= $1::date
-              AND order_date AT TIME ZONE 'America/Chicago' < $2::date + interval '1 day'
+            WHERE order_date >= $1::date
+              AND order_date < $2::date + interval '1 day'
               ${employeeFilter}
-            GROUP BY DATE_TRUNC('week', order_date AT TIME ZONE 'America/Chicago')
+            GROUP BY DATE_TRUNC('week', order_date)
             ORDER BY period
           `;
         } else { // month
           sqlQuery = `
             SELECT
-              TO_CHAR(DATE_TRUNC('month', order_date AT TIME ZONE 'America/Chicago'), 'YYYY-MM') as period,
+              TO_CHAR(DATE_TRUNC('month', order_date), 'YYYY-MM') as period,
               SUM(${getItemQuantitySql()}) as value
             FROM sales_orders
-            WHERE order_date AT TIME ZONE 'America/Chicago' >= $1::date
-              AND order_date AT TIME ZONE 'America/Chicago' < $2::date + interval '1 day'
+            WHERE order_date >= $1::date
+              AND order_date < $2::date + interval '1 day'
               ${employeeFilter}
-            GROUP BY DATE_TRUNC('month', order_date AT TIME ZONE 'America/Chicago')
+            GROUP BY DATE_TRUNC('month', order_date)
             ORDER BY period
           `;
         }
@@ -138,48 +138,48 @@ router.get('/sales', async (req, res) => {
         if (granularity === 'hour') {
           sqlQuery = `
             SELECT
-              EXTRACT(HOUR FROM order_date AT TIME ZONE 'America/Chicago') as period,
+              EXTRACT(HOUR FROM order_date) as period,
               COALESCE(SUM(total), 0) as value
             FROM sales_orders
-            WHERE DATE(order_date AT TIME ZONE 'America/Chicago') = $1
+            WHERE DATE(order_date) = $1
               ${employeeFilter}
-            GROUP BY EXTRACT(HOUR FROM order_date AT TIME ZONE 'America/Chicago')
+            GROUP BY EXTRACT(HOUR FROM order_date)
             ORDER BY period
           `;
         } else if (granularity === 'day') {
           sqlQuery = `
             SELECT
-              TO_CHAR(order_date AT TIME ZONE 'America/Chicago', 'YYYY-MM-DD') as period,
+              TO_CHAR(order_date, 'YYYY-MM-DD') as period,
               COALESCE(SUM(total), 0) as value
             FROM sales_orders
-            WHERE order_date AT TIME ZONE 'America/Chicago' >= $1::date
-              AND order_date AT TIME ZONE 'America/Chicago' < $2::date + interval '1 day'
+            WHERE order_date >= $1::date
+              AND order_date < $2::date + interval '1 day'
               ${employeeFilter}
-            GROUP BY TO_CHAR(order_date AT TIME ZONE 'America/Chicago', 'YYYY-MM-DD')
+            GROUP BY TO_CHAR(order_date, 'YYYY-MM-DD')
             ORDER BY period
           `;
         } else if (granularity === 'week') {
           sqlQuery = `
             SELECT
-              TO_CHAR(DATE_TRUNC('week', order_date AT TIME ZONE 'America/Chicago'), 'YYYY-MM-DD') as period,
+              TO_CHAR(DATE_TRUNC('week', order_date), 'YYYY-MM-DD') as period,
               COALESCE(SUM(total), 0) as value
             FROM sales_orders
-            WHERE order_date AT TIME ZONE 'America/Chicago' >= $1::date
-              AND order_date AT TIME ZONE 'America/Chicago' < $2::date + interval '1 day'
+            WHERE order_date >= $1::date
+              AND order_date < $2::date + interval '1 day'
               ${employeeFilter}
-            GROUP BY DATE_TRUNC('week', order_date AT TIME ZONE 'America/Chicago')
+            GROUP BY DATE_TRUNC('week', order_date)
             ORDER BY period
           `;
         } else { // month
           sqlQuery = `
             SELECT
-              TO_CHAR(DATE_TRUNC('month', order_date AT TIME ZONE 'America/Chicago'), 'YYYY-MM') as period,
+              TO_CHAR(DATE_TRUNC('month', order_date), 'YYYY-MM') as period,
               COALESCE(SUM(total), 0) as value
             FROM sales_orders
-            WHERE order_date AT TIME ZONE 'America/Chicago' >= $1::date
-              AND order_date AT TIME ZONE 'America/Chicago' < $2::date + interval '1 day'
+            WHERE order_date >= $1::date
+              AND order_date < $2::date + interval '1 day'
               ${employeeFilter}
-            GROUP BY DATE_TRUNC('month', order_date AT TIME ZONE 'America/Chicago')
+            GROUP BY DATE_TRUNC('month', order_date)
             ORDER BY period
           `;
         }
@@ -191,48 +191,48 @@ router.get('/sales', async (req, res) => {
         if (granularity === 'hour') {
           sqlQuery = `
             SELECT
-              EXTRACT(HOUR FROM order_date AT TIME ZONE 'America/Chicago') as period,
+              EXTRACT(HOUR FROM order_date) as period,
               COUNT(*) as value
             FROM sales_orders
-            WHERE DATE(order_date AT TIME ZONE 'America/Chicago') = $1
+            WHERE DATE(order_date) = $1
               ${employeeFilter}
-            GROUP BY EXTRACT(HOUR FROM order_date AT TIME ZONE 'America/Chicago')
+            GROUP BY EXTRACT(HOUR FROM order_date)
             ORDER BY period
           `;
         } else if (granularity === 'day') {
           sqlQuery = `
             SELECT
-              TO_CHAR(order_date AT TIME ZONE 'America/Chicago', 'YYYY-MM-DD') as period,
+              TO_CHAR(order_date, 'YYYY-MM-DD') as period,
               COUNT(*) as value
             FROM sales_orders
-            WHERE order_date AT TIME ZONE 'America/Chicago' >= $1::date
-              AND order_date AT TIME ZONE 'America/Chicago' < $2::date + interval '1 day'
+            WHERE order_date >= $1::date
+              AND order_date < $2::date + interval '1 day'
               ${employeeFilter}
-            GROUP BY TO_CHAR(order_date AT TIME ZONE 'America/Chicago', 'YYYY-MM-DD')
+            GROUP BY TO_CHAR(order_date, 'YYYY-MM-DD')
             ORDER BY period
           `;
         } else if (granularity === 'week') {
           sqlQuery = `
             SELECT
-              TO_CHAR(DATE_TRUNC('week', order_date AT TIME ZONE 'America/Chicago'), 'YYYY-MM-DD') as period,
+              TO_CHAR(DATE_TRUNC('week', order_date), 'YYYY-MM-DD') as period,
               COUNT(*) as value
             FROM sales_orders
-            WHERE order_date AT TIME ZONE 'America/Chicago' >= $1::date
-              AND order_date AT TIME ZONE 'America/Chicago' < $2::date + interval '1 day'
+            WHERE order_date >= $1::date
+              AND order_date < $2::date + interval '1 day'
               ${employeeFilter}
-            GROUP BY DATE_TRUNC('week', order_date AT TIME ZONE 'America/Chicago')
+            GROUP BY DATE_TRUNC('week', order_date)
             ORDER BY period
           `;
         } else { // month
           sqlQuery = `
             SELECT
-              TO_CHAR(DATE_TRUNC('month', order_date AT TIME ZONE 'America/Chicago'), 'YYYY-MM') as period,
+              TO_CHAR(DATE_TRUNC('month', order_date), 'YYYY-MM') as period,
               COUNT(*) as value
             FROM sales_orders
-            WHERE order_date AT TIME ZONE 'America/Chicago' >= $1::date
-              AND order_date AT TIME ZONE 'America/Chicago' < $2::date + interval '1 day'
+            WHERE order_date >= $1::date
+              AND order_date < $2::date + interval '1 day'
               ${employeeFilter}
-            GROUP BY DATE_TRUNC('month', order_date AT TIME ZONE 'America/Chicago')
+            GROUP BY DATE_TRUNC('month', order_date)
             ORDER BY period
           `;
         }
@@ -244,48 +244,48 @@ router.get('/sales', async (req, res) => {
         if (granularity === 'hour') {
           sqlQuery = `
             SELECT
-              EXTRACT(HOUR FROM order_date AT TIME ZONE 'America/Chicago') as period,
+              EXTRACT(HOUR FROM order_date) as period,
               COALESCE(AVG(total), 0) as value
             FROM sales_orders
-            WHERE DATE(order_date AT TIME ZONE 'America/Chicago') = $1
+            WHERE DATE(order_date) = $1
               ${employeeFilter}
-            GROUP BY EXTRACT(HOUR FROM order_date AT TIME ZONE 'America/Chicago')
+            GROUP BY EXTRACT(HOUR FROM order_date)
             ORDER BY period
           `;
         } else if (granularity === 'day') {
           sqlQuery = `
             SELECT
-              TO_CHAR(order_date AT TIME ZONE 'America/Chicago', 'YYYY-MM-DD') as period,
+              TO_CHAR(order_date, 'YYYY-MM-DD') as period,
               COALESCE(AVG(total), 0) as value
             FROM sales_orders
-            WHERE order_date AT TIME ZONE 'America/Chicago' >= $1::date
-              AND order_date AT TIME ZONE 'America/Chicago' < $2::date + interval '1 day'
+            WHERE order_date >= $1::date
+              AND order_date < $2::date + interval '1 day'
               ${employeeFilter}
-            GROUP BY TO_CHAR(order_date AT TIME ZONE 'America/Chicago', 'YYYY-MM-DD')
+            GROUP BY TO_CHAR(order_date, 'YYYY-MM-DD')
             ORDER BY period
           `;
         } else if (granularity === 'week') {
           sqlQuery = `
             SELECT
-              TO_CHAR(DATE_TRUNC('week', order_date AT TIME ZONE 'America/Chicago'), 'YYYY-MM-DD') as period,
+              TO_CHAR(DATE_TRUNC('week', order_date), 'YYYY-MM-DD') as period,
               COALESCE(AVG(total), 0) as value
             FROM sales_orders
-            WHERE order_date AT TIME ZONE 'America/Chicago' >= $1::date
-              AND order_date AT TIME ZONE 'America/Chicago' < $2::date + interval '1 day'
+            WHERE order_date >= $1::date
+              AND order_date < $2::date + interval '1 day'
               ${employeeFilter}
-            GROUP BY DATE_TRUNC('week', order_date AT TIME ZONE 'America/Chicago')
+            GROUP BY DATE_TRUNC('week', order_date)
             ORDER BY period
           `;
         } else { // month
           sqlQuery = `
             SELECT
-              TO_CHAR(DATE_TRUNC('month', order_date AT TIME ZONE 'America/Chicago'), 'YYYY-MM') as period,
+              TO_CHAR(DATE_TRUNC('month', order_date), 'YYYY-MM') as period,
               COALESCE(AVG(total), 0) as value
             FROM sales_orders
-            WHERE order_date AT TIME ZONE 'America/Chicago' >= $1::date
-              AND order_date AT TIME ZONE 'America/Chicago' < $2::date + interval '1 day'
+            WHERE order_date >= $1::date
+              AND order_date < $2::date + interval '1 day'
               ${employeeFilter}
-            GROUP BY DATE_TRUNC('month', order_date AT TIME ZONE 'America/Chicago')
+            GROUP BY DATE_TRUNC('month', order_date)
             ORDER BY period
           `;
         }
@@ -300,8 +300,8 @@ router.get('/sales', async (req, res) => {
             SUM((item->>'quantity')::int) as value
           FROM sales_orders,
           jsonb_array_elements(order_details->'items') AS item
-          WHERE order_date AT TIME ZONE 'America/Chicago' >= $1::date
-            AND order_date AT TIME ZONE 'America/Chicago' < $2::date + interval '1 day'
+          WHERE order_date >= $1::date
+            AND order_date < $2::date + interval '1 day'
             ${employeeFilter}
           GROUP BY item->>'name'
           ORDER BY value DESC
@@ -318,8 +318,8 @@ router.get('/sales', async (req, res) => {
             COUNT(*) as count,
             SUM(total) as value
           FROM sales_orders
-          WHERE order_date AT TIME ZONE 'America/Chicago' >= $1::date
-            AND order_date AT TIME ZONE 'America/Chicago' < $2::date + interval '1 day'
+          WHERE order_date >= $1::date
+            AND order_date < $2::date + interval '1 day'
             ${employeeFilter}
           GROUP BY payment_method
           ORDER BY value DESC
@@ -331,14 +331,14 @@ router.get('/sales', async (req, res) => {
         // Sales by hour of day (aggregated across all days in range)
         sqlQuery = `
           SELECT
-            EXTRACT(HOUR FROM order_date AT TIME ZONE 'America/Chicago') as period,
+            EXTRACT(HOUR FROM order_date) as period,
             COUNT(*) as count,
             SUM(total) as value
           FROM sales_orders
-          WHERE order_date AT TIME ZONE 'America/Chicago' >= $1::date
-            AND order_date AT TIME ZONE 'America/Chicago' < $2::date + interval '1 day'
+          WHERE order_date >= $1::date
+            AND order_date < $2::date + interval '1 day'
             ${employeeFilter}
-          GROUP BY EXTRACT(HOUR FROM order_date AT TIME ZONE 'America/Chicago')
+          GROUP BY EXTRACT(HOUR FROM order_date)
           ORDER BY period
         `;
         break;
@@ -355,8 +355,8 @@ router.get('/sales', async (req, res) => {
             COUNT(*) as count,
             SUM(total) as value
           FROM sales_orders
-          WHERE order_date AT TIME ZONE 'America/Chicago' >= $1::date
-            AND order_date AT TIME ZONE 'America/Chicago' < $2::date + interval '1 day'
+          WHERE order_date >= $1::date
+            AND order_date < $2::date + interval '1 day'
             ${employeeFilter}
           GROUP BY CASE
             WHEN customer_id = '0' OR customer_id = 'guest' THEN 'Guest'
