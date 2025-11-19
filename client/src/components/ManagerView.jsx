@@ -529,13 +529,14 @@ function OrdersTab() {
   const formatDateTime = (dateString) => {
     const date = new Date(dateString);
     return date.toLocaleString('en-US', {
+      timeZone: 'America/Chicago',
       month: 'short',
       day: 'numeric',
       year: 'numeric',
       hour: 'numeric',
       minute: '2-digit',
       hour12: true
-    });
+    }) + ' CST';
   };
 
   if (loading) return <div className="loading">Loading orders...</div>;

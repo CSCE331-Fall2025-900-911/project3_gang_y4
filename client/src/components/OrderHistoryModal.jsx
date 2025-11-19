@@ -35,14 +35,15 @@ function OrderHistoryModal({ customerId, onClose }) {
 
   const formatDate = (dateString) => {
     const date = new Date(dateString);
-    return date.toLocaleDateString('en-US', {
+    return date.toLocaleString('en-US', {
+      timeZone: 'America/Chicago',
       month: 'short',
       day: 'numeric',
       year: 'numeric',
       hour: 'numeric',
       minute: '2-digit',
       hour12: true
-    });
+    }) + ' CST';
   };
 
   const getItemCount = (orderDetails) => {
