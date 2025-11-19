@@ -154,6 +154,16 @@ function CustomerKiosk({ user, onLogout }) {
     }
   };
 
+  const images = importAll(require.context('../images', false, /\.(png|jpe?g|svg)$/));
+
+  function importAll(r) {
+    let imgs = {};
+    r.keys.forEach((key) => {
+      imgs[key.replace('./', '')] = r(key);
+    });
+    return imgs;
+  }
+
   const openCustomizationModal = (item) => {
     setSelectedItem(item);
     setEditingCartIndex(null);
@@ -401,8 +411,11 @@ function CustomerKiosk({ user, onLogout }) {
                   <div className="menu-items">
                     {category.items.map((item) => (
                       <div key={item.id} className="menu-item">
-                        <image>
-                        </image>
+                        <img 
+                          className="item-image"
+                          src={images[`${item.name}.png`]} 
+                          alt={item.name}
+                        />
                         <div className="item-info">
                           <h3>{item.name}</h3>
                           <p className="item-price">${item.price.toFixed(2)}</p>
