@@ -1,4 +1,4 @@
-# 🧋 Boba Kiosk - Self-Service Point of Sale System
+#  Boba Kiosk - Self-Service Point of Sale System
 
 A modern, full-stack kiosk application for boba tea shops featuring customer self-checkout, employee POS interface, manager dashboard, Google OAuth authentication, and integrated rewards system.
 

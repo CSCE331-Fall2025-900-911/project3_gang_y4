@@ -1,5 +1,6 @@
 import React, { useState, useEffect, useRef } from 'react';
 import CustomizationModal from './CustomizationModal';
+import OrderHistoryModal from './OrderHistoryModal';
 import { API_ENDPOINTS } from '../config/api';
 import '../styles/CustomerKiosk.css';
 
@@ -17,6 +18,9 @@ function CustomerKiosk({ user, onLogout }) {
 
   // Payment method selection state
   const [showPaymentModal, setShowPaymentModal] = useState(false);
+
+  // Order history modal state
+  const [showOrderHistory, setShowOrderHistory] = useState(false);
 
   // Customer account state
   const [customerInfo, setCustomerInfo] = useState(null);
@@ -347,6 +351,15 @@ function CustomerKiosk({ user, onLogout }) {
     }
   };
 
+  const handleCancelOrder = () => {
+    if (cart.length === 0) return;
+
+    if (window.confirm('Are you sure you want to cancel this order and clear the cart?')) {
+      setCart([]);
+      setShowPaymentModal(false);
+    }
+  };
+
   return (
     <div className="customer-kiosk">
       {/* Header */}
@@ -356,6 +369,11 @@ function CustomerKiosk({ user, onLogout }) {
           <span>Welcome, {user.name}!</span>
           {customerInfo && !customerInfo.is_guest && customerInfo.rewards_points !== undefined && (
             <span className="rewards-display">🎁 {customerInfo.rewards_points} points</span>
+          )}
+          {customerInfo && !customerInfo.is_guest && customerInfo.custid && (
+            <button onClick={() => setShowOrderHistory(true)} className="order-history-button">
+              📋 Order History
+            </button>
           )}
           <button onClick={onLogout} className="logout-button">Logout</button>
         </div>
@@ -492,13 +510,22 @@ function CustomerKiosk({ user, onLogout }) {
                 <span className="total-amount">${calculateTotalWithTax().toFixed(2)}</span>
               </div>
             </div>
-            <button
-              className="checkout-button"
-              onClick={initiateCheckout}
-              disabled={cart.length === 0}
-            >
-              Checkout
-            </button>
+            <div className="checkout-buttons">
+              <button
+                className="cancel-button"
+                onClick={handleCancelOrder}
+                disabled={cart.length === 0}
+              >
+                ✕ Cancel
+              </button>
+              <button
+                className="checkout-button"
+                onClick={initiateCheckout}
+                disabled={cart.length === 0}
+              >
+                ✓ Checkout
+              </button>
+            </div>
           </div>
         </aside>
       </div>
@@ -546,6 +573,14 @@ function CustomerKiosk({ user, onLogout }) {
             </div>
           </div>
         </div>
+      )}
+
+      {/* Order History Modal */}
+      {showOrderHistory && customerInfo && customerInfo.custid && (
+        <OrderHistoryModal
+          customerId={customerInfo.custid}
+          onClose={() => setShowOrderHistory(false)}
+        />
       )}
     </div>
   );
