@@ -418,7 +418,12 @@
   color: #3498db;
   font-size: 1.1rem;
   position: relative;
-  z-index: 1;
+  z-index: 100 !important;
+  background-color: #fff;
+  border-radius: 8px;
+  margin: 2rem auto;
+  max-width: 400px;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
 }
 
 /* Orders Tab Styles */
@@ -641,8 +646,16 @@
 
 .order-row {
   display: grid;
-  grid-template-columns: repeat(auto-fit, minmax(120px, 1fr));
-  gap: 1rem;
+  grid-template-columns:
+    minmax(70px, auto)      /* Order ID */
+    minmax(180px, 1.5fr)    /* Date */
+    minmax(160px, 2fr)      /* Customer */
+    minmax(140px, 1.5fr)    /* Employee */
+    minmax(90px, auto)      /* Total */
+    minmax(60px, auto)      /* Items */
+    minmax(110px, auto)     /* Payment */
+    40px;                   /* Expand icon */
+  gap: 0.75rem;
   padding: 1rem;
   cursor: pointer;
   transition: background-color 0.2s;
@@ -847,4 +860,521 @@
 .manager-view > *[style*="position: fixed"],
 .manager-view > *[style*="position: absolute"] {
   display: none !important;
+}
+
+/* CRITICAL FIX: Force hide any modal overlays that might leak into manager view */
+/* EXCEPT for dependency editor modal which we want to show */
+.manager-view .modal-overlay:not(.dependency-editor-modal .modal-overlay),
+.manager-view .modal-backdrop:not(.dependency-editor-modal .modal-backdrop),
+.manager-content .modal-overlay:not(.dependency-editor-modal),
+.manager-content .modal-backdrop:not(.dependency-editor-modal) {
+  display: none !important;
+  visibility: hidden !important;
+  opacity: 0 !important;
+  pointer-events: none !important;
+}
+
+/* Ensure tab content is always visible with high z-index */
+.manager-content .tab-content {
+  position: relative;
+  z-index: 10 !important;
+  background-color: #f5f7fa !important;
+  min-height: 400px;
+}
+
+/* Ensure all content inside tab-content is visible */
+.tab-content > * {
+  position: relative;
+  z-index: 11;
+  background-color: transparent;
+}
+
+/* ===== DEPENDENCY EDITOR STYLES ===== */
+
+/* Dependencies column in menu table */
+.dependencies-preview {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.dependencies-count {
+  color: #27ae60;
+  font-weight: 500;
+  padding: 4px 8px;
+  background-color: #d5f4e6;
+  border-radius: 4px;
+  font-size: 0.9em;
+}
+
+.no-dependencies {
+  color: #e67e22;
+  font-weight: 500;
+  padding: 4px 8px;
+  background-color: #fdebd0;
+  border-radius: 4px;
+  font-size: 0.9em;
+}
+
+.loading-deps {
+  color: #95a5a6;
+  font-size: 0.9em;
+  font-style: italic;
+}
+
+/* Dependencies button */
+.btn-dependencies {
+  background-color: #9b59b6;
+  color: white;
+  border: none;
+  padding: 6px 12px;
+  margin: 0 4px;
+  cursor: pointer;
+  border-radius: 4px;
+  font-size: 0.9em;
+  transition: background-color 0.2s;
+}
+
+.btn-dependencies:hover {
+  background-color: #8e44ad;
+}
+
+/* Dependency Editor Modal */
+.dependency-editor-modal {
+  width: 600px;
+  max-width: 90vw;
+  max-height: 80vh;
+  overflow-y: auto;
+}
+
+.modal-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 1.5rem;
+  border-bottom: 1px solid #e0e0e0;
+  background-color: #f8f9fa;
+}
+
+.modal-header h2 {
+  margin: 0;
+  font-size: 1.5rem;
+  color: #2c3e50;
+}
+
+.close-button {
+  background: none;
+  border: none;
+  font-size: 2rem;
+  color: #95a5a6;
+  cursor: pointer;
+  padding: 0;
+  width: 32px;
+  height: 32px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  transition: color 0.2s;
+}
+
+.close-button:hover {
+  color: #e74c3c;
+}
+
+.modal-body {
+  padding: 1.5rem;
+}
+
+.message {
+  padding: 12px;
+  border-radius: 6px;
+  margin-bottom: 1rem;
+  font-weight: 500;
+}
+
+.message.success {
+  background-color: #d4edda;
+  color: #155724;
+  border: 1px solid #c3e6cb;
+}
+
+.message.error {
+  background-color: #f8d7da;
+  color: #721c24;
+  border: 1px solid #f5c6cb;
+}
+
+/* Current Dependencies Section */
+.current-dependencies {
+  margin-bottom: 2rem;
+}
+
+.current-dependencies h3 {
+  font-size: 1.2rem;
+  color: #2c3e50;
+  margin-bottom: 1rem;
+}
+
+.no-dependencies-message {
+  padding: 1rem;
+  background-color: #fff3cd;
+  border: 1px solid #ffc107;
+  border-radius: 6px;
+  color: #856404;
+  font-weight: 500;
+}
+
+.dependencies-list {
+  list-style: none;
+  padding: 0;
+  margin: 0;
+}
+
+.dependency-item {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 12px;
+  margin-bottom: 8px;
+  background-color: #f8f9fa;
+  border: 1px solid #dee2e6;
+  border-radius: 6px;
+  transition: background-color 0.2s;
+}
+
+.dependency-item:hover {
+  background-color: #e9ecef;
+}
+
+.dependency-info {
+  flex: 1;
+  font-size: 1rem;
+}
+
+.dependency-info strong {
+  color: #2c3e50;
+  margin-right: 8px;
+}
+
+.btn-remove {
+  background-color: #e74c3c;
+  color: white;
+  border: none;
+  padding: 6px 12px;
+  cursor: pointer;
+  border-radius: 4px;
+  font-size: 0.9em;
+  transition: background-color 0.2s;
+}
+
+.btn-remove:hover:not(:disabled) {
+  background-color: #c0392b;
+}
+
+.btn-remove:disabled {
+  opacity: 0.6;
+  cursor: not-allowed;
+}
+
+/* Add Dependency Section */
+.add-dependency {
+  margin-top: 2rem;
+  padding-top: 2rem;
+  border-top: 2px solid #dee2e6;
+}
+
+.add-dependency h3 {
+  font-size: 1.2rem;
+  color: #2c3e50;
+  margin-bottom: 1rem;
+}
+
+.add-dependency-form {
+  display: flex;
+  gap: 10px;
+  align-items: center;
+}
+
+.add-dependency-form select {
+  flex: 2;
+  padding: 10px;
+  border: 1px solid #ced4da;
+  border-radius: 6px;
+  font-size: 1rem;
+  background-color: white;
+}
+
+.add-dependency-form input {
+  flex: 1;
+  padding: 10px;
+  border: 1px solid #ced4da;
+  border-radius: 6px;
+  font-size: 1rem;
+}
+
+.btn-add {
+  background-color: #27ae60;
+  color: white;
+  border: none;
+  padding: 10px 20px;
+  cursor: pointer;
+  border-radius: 6px;
+  font-size: 1rem;
+  font-weight: 500;
+  transition: background-color 0.2s;
+  white-space: nowrap;
+}
+
+.btn-add:hover:not(:disabled) {
+  background-color: #229954;
+}
+
+.btn-add:disabled {
+  opacity: 0.6;
+  cursor: not-allowed;
+}
+
+/* Modal Footer */
+.modal-footer {
+  display: flex;
+  justify-content: flex-end;
+  gap: 10px;
+  padding: 1.5rem;
+  border-top: 1px solid #e0e0e0;
+  background-color: #f8f9fa;
+}
+
+.btn-cancel {
+  background-color: #95a5a6;
+  color: white;
+  border: none;
+  padding: 10px 20px;
+  cursor: pointer;
+  border-radius: 6px;
+  font-size: 1rem;
+  transition: background-color 0.2s;
+}
+
+.btn-cancel:hover {
+  background-color: #7f8c8d;
+}
+
+.btn-save {
+  background-color: #3498db;
+  color: white;
+  border: none;
+  padding: 10px 20px;
+  cursor: pointer;
+  border-radius: 6px;
+  font-size: 1rem;
+  font-weight: 500;
+  transition: background-color 0.2s;
+}
+
+.btn-save:hover {
+  background-color: #2980b9;
+}
+
+/* ===== X REPORT STYLES ===== */
+
+/* Report Controls */
+.report-controls {
+  display: flex;
+  gap: 15px;
+  align-items: flex-end;
+  padding: 20px;
+  background-color: #f8f9fa;
+  border-radius: 8px;
+  margin-bottom: 20px;
+  flex-wrap: wrap;
+}
+
+.control-group {
+  display: flex;
+  flex-direction: column;
+  gap: 5px;
+}
+
+.control-group label {
+  font-weight: 600;
+  font-size: 0.9rem;
+  color: #2c3e50;
+}
+
+.control-group input[type="date"],
+.control-group input[type="time"] {
+  padding: 8px 12px;
+  border: 1px solid #ced4da;
+  border-radius: 6px;
+  font-size: 1rem;
+  background-color: white;
+  min-width: 150px;
+}
+
+.btn-generate-report {
+  background-color: #3498db;
+  color: white;
+  border: none;
+  padding: 10px 24px;
+  border-radius: 6px;
+  font-size: 1rem;
+  font-weight: 600;
+  cursor: pointer;
+  transition: background-color 0.2s;
+  white-space: nowrap;
+}
+
+.btn-generate-report:hover {
+  background-color: #2980b9;
+}
+
+/* Error Message */
+.error-message {
+  padding: 12px;
+  background-color: #f8d7da;
+  color: #721c24;
+  border: 1px solid #f5c6cb;
+  border-radius: 6px;
+  margin-bottom: 20px;
+  font-weight: 500;
+}
+
+/* X Report Display */
+.x-report-display {
+  background-color: white;
+  border: 1px solid #dee2e6;
+  border-radius: 8px;
+  padding: 30px;
+  margin-top: 20px;
+}
+
+/* Report Header */
+.report-header {
+  text-align: center;
+  padding-bottom: 20px;
+  border-bottom: 2px solid #3498db;
+  margin-bottom: 30px;
+}
+
+.report-header h3 {
+  font-size: 2rem;
+  color: #2c3e50;
+  margin: 0 0 10px 0;
+  font-weight: 700;
+}
+
+.report-header p {
+  margin: 5px 0;
+  color: #555;
+  font-size: 1rem;
+}
+
+/* Report Section */
+.report-section {
+  margin-bottom: 30px;
+  padding: 20px;
+  background-color: #f8f9fa;
+  border-radius: 8px;
+}
+
+.report-section h4 {
+  font-size: 1.3rem;
+  color: #2c3e50;
+  margin: 0 0 15px 0;
+  padding-bottom: 10px;
+  border-bottom: 2px solid #dee2e6;
+}
+
+/* Summary Grid */
+.summary-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+  gap: 15px;
+  margin-top: 15px;
+}
+
+.summary-item {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 15px;
+  background-color: white;
+  border: 1px solid #dee2e6;
+  border-radius: 6px;
+  transition: box-shadow 0.2s;
+}
+
+.summary-item:hover {
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+}
+
+.summary-item.highlight {
+  background-color: #d5f4e6;
+  border-color: #27ae60;
+  font-weight: 600;
+}
+
+.summary-item .label {
+  color: #555;
+  font-size: 0.95rem;
+}
+
+.summary-item .value {
+  color: #2c3e50;
+  font-size: 1.1rem;
+  font-weight: 600;
+}
+
+.summary-item.highlight .value {
+  color: #27ae60;
+  font-size: 1.3rem;
+}
+
+/* Report Actions */
+.report-actions {
+  display: flex;
+  justify-content: center;
+  gap: 15px;
+  margin-top: 30px;
+  padding-top: 20px;
+  border-top: 2px solid #dee2e6;
+}
+
+.btn-print {
+  background-color: #27ae60;
+  color: white;
+  border: none;
+  padding: 12px 30px;
+  border-radius: 6px;
+  font-size: 1rem;
+  font-weight: 600;
+  cursor: pointer;
+  transition: background-color 0.2s;
+}
+
+.btn-print:hover {
+  background-color: #229954;
+}
+
+/* Print Styles */
+@media print {
+  .manager-header,
+  .manager-tabs,
+  .report-controls,
+  .report-actions {
+    display: none !important;
+  }
+
+  .x-report-display {
+    border: none;
+    padding: 0;
+  }
+
+  .report-section {
+    page-break-inside: avoid;
+  }
+
+  body {
+    background: white;
+  }
 }

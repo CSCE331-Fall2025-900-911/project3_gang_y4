@@ -341,6 +341,15 @@ function CustomerKiosk({ user, onLogout }) {
     }
   };
 
+  const handleCancelOrder = () => {
+    if (cart.length === 0) return;
+
+    if (window.confirm('Are you sure you want to cancel this order and clear the cart?')) {
+      setCart([]);
+      setShowPaymentModal(false);
+    }
+  };
+
   return (
     <div className="customer-kiosk">
       {/* Header */}
@@ -488,13 +497,22 @@ function CustomerKiosk({ user, onLogout }) {
                 <span className="total-amount">${calculateTotalWithTax().toFixed(2)}</span>
               </div>
             </div>
-            <button
-              className="checkout-button"
-              onClick={initiateCheckout}
-              disabled={cart.length === 0}
-            >
-              Checkout
-            </button>
+            <div className="checkout-buttons">
+              <button
+                className="cancel-button"
+                onClick={handleCancelOrder}
+                disabled={cart.length === 0}
+              >
+                ✕ Cancel
+              </button>
+              <button
+                className="checkout-button"
+                onClick={initiateCheckout}
+                disabled={cart.length === 0}
+              >
+                ✓ Checkout
+              </button>
+            </div>
           </div>
         </aside>
       </div>

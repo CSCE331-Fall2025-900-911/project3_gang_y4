@@ -289,6 +289,17 @@ function CheckoutInterface({ user }) {
     }
   };
 
+  const handleCancelOrder = () => {
+    if (cart.length === 0) return;
+
+    if (window.confirm('Are you sure you want to cancel this order and clear the cart?')) {
+      setCart([]);
+      setOrderNotes('');
+      setShowCustomerLookup(false);
+      setShowPaymentModal(false);
+    }
+  };
+
   if (loading) {
     return (
       <div className="employee-content">
@@ -425,13 +436,22 @@ function CheckoutInterface({ user }) {
             </>
           )}
 
-          <button
-            className="btn-checkout"
-            onClick={initiateCheckout}
-            disabled={cart.length === 0}
-          >
-            Checkout
-          </button>
+          <div className="checkout-buttons">
+            <button
+              className="btn-cancel"
+              onClick={handleCancelOrder}
+              disabled={cart.length === 0}
+            >
+              ✕ Cancel
+            </button>
+            <button
+              className="btn-checkout"
+              onClick={initiateCheckout}
+              disabled={cart.length === 0}
+            >
+              ✓ Checkout
+            </button>
+          </div>
         </div>
       </div>
 
