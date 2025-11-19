@@ -14,7 +14,10 @@ export const API_ENDPOINTS = {
   
   // Orders
   ORDERS: `${API_URL}/api/orders`,
-  
+  ORDERS_CUSTOMER_HISTORY: (customerId) => `${API_URL}/api/orders/customer/${customerId}`,
+  ORDERS_RECENT: `${API_URL}/api/orders/recent`,
+  ORDERS_SEARCH: `${API_URL}/api/orders/search`,
+
   // Auth
   AUTH_GOOGLE: `${API_URL}/api/auth/google`,
   AUTH_EMPLOYEE: `${API_URL}/api/auth/employee`,
@@ -24,6 +27,15 @@ export const API_ENDPOINTS = {
   CUSTOMERS_LOOKUP: (username) => `${API_URL}/api/customers/lookup/${username}`,
   CUSTOMERS_REWARDS: (custid) => `${API_URL}/api/customers/${custid}/rewards`,
   CUSTOMERS_GOOGLE_AUTH: `${API_URL}/api/customers/google-auth`,
+
+  // Inventory
+  INVENTORY: `${API_URL}/api/inventory`,
+  INVENTORY_ITEM: (id) => `${API_URL}/api/inventory/${id}`,
+  INVENTORY_LOW_STOCK: `${API_URL}/api/inventory/low-stock`,
+  INVENTORY_MENU_STOCK_STATUS: `${API_URL}/api/inventory/menu-stock-status`,
+  INVENTORY_TRANSACTIONS: `${API_URL}/api/inventory/transactions/history`,
+  INVENTORY_RESTOCK: (id) => `${API_URL}/api/inventory/restock/${id}`,
+  INVENTORY_ADJUST: (id) => `${API_URL}/api/inventory/adjust/${id}`,
 };
 
 export default API_URL;

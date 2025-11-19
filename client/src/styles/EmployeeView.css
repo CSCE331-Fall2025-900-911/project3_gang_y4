@@ -306,16 +306,54 @@
   margin-top: 0.5rem;
 }
 
-.cart-actions {
-  padding: 1rem;
-  display: flex;
-  gap: 0.75rem;
+/* Order Notes Section */
+.order-notes-section {
+  padding: 1rem 1.5rem;
   border-top: 1px solid #e0e0e0;
+  background-color: white;
+  flex-shrink: 0;
 }
 
-.btn-clear,
-.btn-checkout {
-  flex-shrink: 0; /* Keep checkout button fixed at bottom */
+.order-notes-section label {
+  display: block;
+  font-size: 1rem;
+  font-weight: 600;
+  color: #2c3e50;
+  margin-bottom: 0.5rem;
+}
+
+.order-notes-input {
+  width: 100%;
+  padding: 0.75rem;
+  border: 2px solid #ddd;
+  border-radius: 6px;
+  font-size: 1rem;
+  font-family: inherit;
+  resize: vertical;
+  transition: border-color 0.2s;
+  min-height: 80px;
+}
+
+.order-notes-input:focus {
+  outline: none;
+  border-color: #3498db;
+  box-shadow: 0 0 0 3px rgba(52, 152, 219, 0.1);
+}
+
+.order-notes-input::placeholder {
+  color: #95a5a6;
+}
+
+.checkout-buttons {
+  padding: 1rem;
+  display: flex;
+  gap: 1rem;
+  border-top: 1px solid #e0e0e0;
+  flex-shrink: 0;
+}
+
+.btn-cancel {
+  flex: 1;
   padding: 1.25rem;
   border: none;
   border-radius: 8px;
@@ -323,25 +361,66 @@
   font-weight: 600;
   cursor: pointer;
   transition: all 0.2s;
-  width: 100%; /* Full width of cart section */
+  background-color: #dc2626;
+  color: white;
+}
+
+.btn-cancel:hover:not(:disabled) {
+  background-color: #b91c1c;
+}
+
+.btn-cancel:disabled {
+  background-color: #d1d5db;
+  cursor: not-allowed;
+  opacity: 0.6;
+}
+
+.btn-checkout {
+  flex: 1;
+  padding: 1.25rem;
+  border: none;
+  border-radius: 8px;
+  font-size: 1.1rem;
+  font-weight: 600;
+  cursor: pointer;
+  transition: all 0.2s;
+  background-color: #27ae60;
+  color: white;
+}
+
+.btn-checkout:hover:not(:disabled) {
+  background-color: #229954;
+}
+
+.btn-checkout:disabled {
+  background-color: #d1d5db;
+  cursor: not-allowed;
+  opacity: 0.6;
+}
+
+.cart-actions {
+  padding: 1rem;
+  display: flex;
+  gap: 0.75rem;
+  border-top: 1px solid #e0e0e0;
 }
 
 .btn-clear {
+  flex-shrink: 0;
+  padding: 1.25rem;
+  border: none;
+  border-radius: 8px;
+  font-size: 1.1rem;
+  font-weight: 600;
+  cursor: pointer;
+  transition: all 0.2s;
+  width: 100%;
   background-color: #95a5a6;
   color: white;
 }
 
 .btn-clear:hover {
   background-color: #7f8c8d;
-}
-
-.btn-checkout {
-  background-color: #27ae60;
-  color: white;
-}
-
-.btn-checkout:hover {
-  background-color: #229954;
 }
 
 /* Loading and Error States */
