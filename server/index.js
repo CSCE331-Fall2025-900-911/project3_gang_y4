@@ -11,6 +11,7 @@ import employeeRoutes from './routes/employees.js';
 import analyticsRoutes from './routes/analytics.js';
 import salesRoutes from './routes/sales.js';
 import customerRoutes from './routes/customers.js';
+import reportsRoutes from './routes/reports.js';
 
 // Load environment variables
 dotenv.config();
@@ -46,6 +47,7 @@ app.use('/api/employees', employeeRoutes);
 app.use('/api/analytics', analyticsRoutes);
 app.use('/api/sales', salesRoutes);
 app.use('/api/customers', customerRoutes);
+app.use('/api/reports', reportsRoutes);
 
 app.get('/', (req, res) => {
   res.send('✅ Express backend is running on Render!');
