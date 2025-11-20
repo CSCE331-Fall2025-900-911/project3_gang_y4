@@ -24,9 +24,9 @@ router.get('/x', async (req, res) => {
         SUM(subtotal) as gross_sales,
         SUM(tax) as total_tax
       FROM sales_orders
-      WHERE (order_date AT TIME ZONE 'America/Chicago')::date = $1::date
-        AND (order_date AT TIME ZONE 'America/Chicago')::time >= $2::time
-        AND (order_date AT TIME ZONE 'America/Chicago')::time <= ($3 || ':59')::time`,
+      WHERE order_date::date = $1::date
+        AND order_date::time >= $2::time
+        AND order_date::time <= ($3 || ':59')::time`,
       [date, startTime, endTime]
     );
 
@@ -36,9 +36,9 @@ router.get('/x', async (req, res) => {
         COALESCE(SUM((item->>'quantity')::int), 0) as total_items
       FROM sales_orders,
       jsonb_array_elements(order_details->'items') AS item
-      WHERE (order_date AT TIME ZONE 'America/Chicago')::date = $1::date
-        AND (order_date AT TIME ZONE 'America/Chicago')::time >= $2::time
-        AND (order_date AT TIME ZONE 'America/Chicago')::time <= ($3 || ':59')::time`,
+      WHERE order_date::date = $1::date
+        AND order_date::time >= $2::time
+        AND order_date::time <= ($3 || ':59')::time`,
       [date, startTime, endTime]
     );
 
@@ -49,9 +49,9 @@ router.get('/x', async (req, res) => {
         COUNT(*) as count,
         SUM(total) as amount
       FROM sales_orders
-      WHERE (order_date AT TIME ZONE 'America/Chicago')::date = $1::date
-        AND (order_date AT TIME ZONE 'America/Chicago')::time >= $2::time
-        AND (order_date AT TIME ZONE 'America/Chicago')::time <= ($3 || ':59')::time
+      WHERE order_date::date = $1::date
+        AND order_date::time >= $2::time
+        AND order_date::time <= ($3 || ':59')::time
       GROUP BY payment_method
       ORDER BY payment_method`,
       [date, startTime, endTime]
@@ -65,9 +65,9 @@ router.get('/x', async (req, res) => {
         SUM((item->>'item_total')::numeric) as revenue
       FROM sales_orders,
       jsonb_array_elements(order_details->'items') AS item
-      WHERE (order_date AT TIME ZONE 'America/Chicago')::date = $1::date
-        AND (order_date AT TIME ZONE 'America/Chicago')::time >= $2::time
-        AND (order_date AT TIME ZONE 'America/Chicago')::time <= ($3 || ':59')::time
+      WHERE order_date::date = $1::date
+        AND order_date::time >= $2::time
+        AND order_date::time <= ($3 || ':59')::time
       GROUP BY item->>'name'
       ORDER BY quantity DESC
       LIMIT 10`,
@@ -85,9 +85,9 @@ router.get('/x', async (req, res) => {
         SUM(so.total) as sales
       FROM sales_orders so
       LEFT JOIN employees e ON so.employee_id = e.employeeid
-      WHERE (so.order_date AT TIME ZONE 'America/Chicago')::date = $1::date
-        AND (so.order_date AT TIME ZONE 'America/Chicago')::time >= $2::time
-        AND (so.order_date AT TIME ZONE 'America/Chicago')::time <= ($3 || ':59')::time
+      WHERE so.order_date::date = $1::date
+        AND so.order_date::time >= $2::time
+        AND so.order_date::time <= ($3 || ':59')::time
       GROUP BY so.employee_id, e.username
       ORDER BY sales DESC`,
       [date, startTime, endTime]
@@ -96,13 +96,13 @@ router.get('/x', async (req, res) => {
     // 6. Sales by Hour (if same-day report)
     const salesByHour = await query(
       `SELECT
-        EXTRACT(HOUR FROM (order_date AT TIME ZONE 'America/Chicago')) as hour,
+        EXTRACT(HOUR FROM order_date) as hour,
         COUNT(*) as orders,
         SUM(total) as revenue
       FROM sales_orders
-      WHERE (order_date AT TIME ZONE 'America/Chicago')::date = $1::date
-        AND (order_date AT TIME ZONE 'America/Chicago')::time >= $2::time
-        AND (order_date AT TIME ZONE 'America/Chicago')::time <= ($3 || ':59')::time
+      WHERE order_date::date = $1::date
+        AND order_date::time >= $2::time
+        AND order_date::time <= ($3 || ':59')::time
       GROUP BY hour
       ORDER BY hour`,
       [date, startTime, endTime]
@@ -125,9 +125,9 @@ router.get('/x', async (req, res) => {
           END
         ), 0) as total_rewards
       FROM sales_orders
-      WHERE (order_date AT TIME ZONE 'America/Chicago')::date = $1::date
-        AND (order_date AT TIME ZONE 'America/Chicago')::time >= $2::time
-        AND (order_date AT TIME ZONE 'America/Chicago')::time <= ($3 || ':59')::time`,
+      WHERE order_date::date = $1::date
+        AND order_date::time >= $2::time
+        AND order_date::time <= ($3 || ':59')::time`,
       [date, startTime, endTime]
     );
 
