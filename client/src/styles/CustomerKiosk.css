@@ -249,7 +249,7 @@
 }
 
 .menu-item {
-  background: white;
+  background: rgb(255, 255, 255);
   height: 30vh;
   padding: 20px;
   border-radius: 12px;
@@ -273,10 +273,17 @@
   box-shadow: 0 6px 20px rgba(0, 0, 0, 0.12);
 }
 
+.item-info {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+}
+
 .item-info h3 {
   font-size: 1.2rem;
   color: #333;
-  margin-bottom: 8px;
+  margin-bottom: 0;
+  
 }
 
 .item-description {
@@ -344,6 +351,10 @@
   padding: 15px;
   border-radius: 10px;
   margin-bottom: 12px;
+
+  display: flex;
+  flex-direction: column;
+
 }
 
 .cart-item-info {
@@ -364,7 +375,11 @@
   display: flex;
   flex-wrap: wrap;
   gap: 5px;
-  margin: 8px 0;
+  margin-left: 8px 0;
+  margin-right: 8px 0; 
+  margin-bottom: 8px;  
+
+  max-width: 40%;
 }
 
 .customization-tag {
@@ -385,6 +400,8 @@
 .cart-item-controls {
   display: flex;
   align-items: center;
+  justify-content: center;
+  text-align: center;
   gap: 10px;
 }
 
@@ -396,9 +413,10 @@
   border-radius: 6px;
   font-size: 1.1rem;
   font-weight: 600;
-  display: flex;
-  align-items: center;
-  justify-content: center;
+
+
+  
+  text-align: center;
   transition: all 0.2s ease;
 }
 
@@ -411,6 +429,7 @@
   background: #ff6b6b;
   font-size: 1.5rem;
   margin-left: 5px;
+  
 }
 
 .cart-item-controls .delete-button:hover {
