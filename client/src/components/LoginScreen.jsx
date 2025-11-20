@@ -175,12 +175,7 @@ function LoginScreen({ onLogin }) {
     return (
       <div className="login-screen">
         <div className="login-container manager-login">
-          <button
-            className="back-button"
-            onClick={handleBackToStaffSelection}
-          >
-            ← Back
-          </button>
+          
           <h1>{loginType === 'employee' ? 'Employee' : 'Manager'} Login</h1>
           <form onSubmit={handleStaffLogin}>
             {staffError && (
@@ -207,6 +202,12 @@ function LoginScreen({ onLogin }) {
             <button type="submit" className="login-button" disabled={staffLoading}>
               {staffLoading ? 'Logging in...' : 'Login'}
             </button>
+            <button
+            className="back-button"
+            onClick={handleBackToStaffSelection}
+          >
+            ← Back
+          </button>
           </form>
         </div>
       </div>
@@ -218,12 +219,7 @@ function LoginScreen({ onLogin }) {
     return (
       <div className="login-screen">
         <div className="login-container">
-          <button
-            className="back-button"
-            onClick={handleBackToMain}
-          >
-            ← Back
-          </button>
+          
           <div className="logo-section">
             <h1>Staff Login</h1>
             <p>Please select your role</p>
@@ -243,6 +239,12 @@ function LoginScreen({ onLogin }) {
               <span className="icon">🔑</span>
               Manager Login
             </button>
+            <button
+            className="back-button"
+            onClick={handleBackToMain}
+          >
+            ← Back
+          </button>
           </div>
         </div>
       </div>
@@ -284,7 +286,7 @@ function LoginScreen({ onLogin }) {
         </div>
 
         <button
-          className="manager-login-button"
+          className="manager-login-button-pg1"
           onClick={() => setShowStaffLogin(true)}
         >
           Employee/Manager Login
