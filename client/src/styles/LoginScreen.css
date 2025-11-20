@@ -86,7 +86,7 @@
   box-shadow: 0 5px 15px rgba(158, 158, 158, 0.4);
 }
 
-.manager-login-button {
+.manager-login-button-pg1 {
   width: 100%;
   padding: 12px;
   background: transparent;
@@ -97,7 +97,41 @@
   transition: all 0.3s ease;
 }
 
-.manager-login-button:hover {
+.manager-login-btn {
+  width: 100%;
+  padding: 12px;
+  background: transparent;
+  color: #666;
+  font-size: 0.9rem;
+  border: 2px solid #e0e0e0;
+  border-radius: 8px;
+  transition: all 0.3s ease;
+}
+
+.employee-login-btn {
+  width: 100%;
+  padding: 12px;
+  background: transparent;
+  color: #666;
+  font-size: 0.9rem;
+  border: 2px solid #e0e0e0;
+  border-radius: 8px;
+  transition: all 0.3s ease;
+}
+
+.manager-login-button-pg1:hover {
+  border-color: #667eea;
+  color: #667eea;
+  background: #f5f7ff;
+}
+
+.manager-login-btn:hover {
+  border-color: #667eea;
+  color: #667eea;
+  background: #f5f7ff;
+}
+
+.employee-login-btn:hover {
   border-color: #667eea;
   color: #667eea;
   background: #f5f7ff;
@@ -136,6 +170,7 @@
 .manager-login .login-button {
   background: #667eea;
   margin-top: 10px;
+  
 }
 
 .manager-login .login-button:hover {
@@ -145,12 +180,9 @@
 }
 
 .back-button {
-  position: absolute;
-  top: 20px;
-  left: 20px;
+
   background: #f5f5f5;
   color: #333;
-  padding: 8px 16px;
   border-radius: 8px;
   font-size: 0.9rem;
   transition: all 0.3s ease;
