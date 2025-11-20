@@ -12,6 +12,8 @@ import analyticsRoutes from './routes/analytics.js';
 import salesRoutes from './routes/sales.js';
 import customerRoutes from './routes/customers.js';
 import reportsRoutes from './routes/reports.js';
+import receiptRoutes from './routes/receipt.js';
+import translateRoutes from './routes/translate.js';
 
 // Load environment variables
 dotenv.config();
@@ -47,6 +49,8 @@ app.use('/api/employees', employeeRoutes);
 app.use('/api/analytics', analyticsRoutes);
 app.use('/api/sales', salesRoutes);
 app.use('/api/customers', customerRoutes);
+app.use('/api/receipt', receiptRoutes);
+app.use('/api/translate', translateRoutes);
 app.use('/api/reports', reportsRoutes);
 
 app.get('/', (req, res) => {
@@ -84,6 +88,8 @@ const startServer = async () => {
       console.log(`📦 Inventory API: http://localhost:${PORT}/api/inventory`);
       console.log(`👥 Employees API: http://localhost:${PORT}/api/employees`);
       console.log(`📊 Analytics API: http://localhost:${PORT}/api/analytics`);
+      console.log(`🧾 Receipt API: http://localhost:${PORT}/api/receipt`);
+      console.log(`🔤 Translate API: http://localhost:${PORT}/api/translate`);
       console.log(`\n✨ Server is ready to accept requests!\n`);
     });
   } catch (error) {
