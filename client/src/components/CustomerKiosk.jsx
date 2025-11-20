@@ -2,6 +2,7 @@ import React, { useState, useEffect, useRef } from 'react';
 import CustomizationModal from './CustomizationModal';
 import OrderHistoryModal from './OrderHistoryModal';
 import { API_ENDPOINTS } from '../config/api';
+import placeholderImage from '../images/placeholdertea.png';
 import '../styles/CustomerKiosk.css';
 
 function CustomerKiosk({ user, onLogout }) {
@@ -158,16 +159,6 @@ function CustomerKiosk({ user, onLogout }) {
     }
   };
 
-  const images = importAll(require.context('../images', false, /\.(png|jpe?g|svg)$/));
-
-  function importAll(r) {
-    let imgs = {};
-    r.keys.forEach((key) => {
-      imgs[key.replace('./', '')] = r(key);
-    });
-    return imgs;
-  }
-
   const openCustomizationModal = (item) => {
     setSelectedItem(item);
     setEditingCartIndex(null);
@@ -199,6 +190,28 @@ function CustomerKiosk({ user, onLogout }) {
     setSelectedItem(null);
     setEditingCartIndex(null);
   };
+
+
+  // Import all images from the images directory
+  const images = import.meta.glob("../images/*", { eager: true });
+
+  function getImage(imageName) {
+    const imageKey = `../images/${imageName}.png`;
+    return images[imageKey] ? images[imageKey].default : null;
+  }
+
+  function getGradientColor(category) {
+    switch (category) {
+      case 'Tea':
+        return 'rgba(255, 229, 137, 0.9)'; 
+      case 'Seasonal':
+        return 'rgba(132, 238, 235, 0.85)';
+      case 'Slush':
+        return 'rgba(254, 164, 188, 0.85)';
+      default:
+        return 'rgba(211, 211, 211, 0.8)'; // Light Gray
+    }
+  }
 
   const removeFromCart = (cartIndex) => {
     const item = cart[cartIndex];
@@ -425,15 +438,11 @@ function CustomerKiosk({ user, onLogout }) {
                   id={`category-${category.category.replace(/\s+/g, '-')}`}
                   className="menu-category"
                 >
-                  <h2 className="category-heading">{category.category}</h2>
-                  <div className="menu-items">
+                  <h2 className="category-heading"  style={{"--gradient-bg": getGradientColor(category.category)}}>{category.category}</h2>
+                  <div className="menu-items" style={{"--gradient-bg": getGradientColor(category.category)}}>
                     {category.items.map((item) => (
-                      <div key={item.id} className="menu-item">
-                        <img 
-                          className="item-image"
-                          src={images[`${item.name}.png`]} 
-                          alt={item.name}
-                        />
+                      <div key={item.id} className="menu-item" style={{ "--item-image": `url(${getImage(item.name) || placeholderImage})` }}>
+                        
                         <div className="item-info">
                           <h3>{item.name}</h3>
                           <p className="item-price">${item.price.toFixed(2)}</p>
