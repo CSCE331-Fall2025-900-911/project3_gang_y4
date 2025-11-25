@@ -117,12 +117,22 @@ function LoginScreen({ onLogin }) {
         }),
       });
 
-      if (!response.ok) {
-        const errorData = await response.json();
-        throw new Error(errorData.error || 'Authentication failed');
+      // Read response text first to avoid json() throwing on empty responses
+      const raw = await response.text();
+      let data = null;
+      if (raw) {
+        try {
+          data = JSON.parse(raw);
+        } catch (e) {
+          console.error('Invalid JSON from server:', raw);
+          throw new Error('Invalid JSON received from server');
+        }
       }
 
-      const data = await response.json();
+      if (!response.ok) {
+        const errMsg = data?.error || data?.message || raw || `Server error ${response.status}`;
+        throw new Error(errMsg);
+      }
 
       // Call onLogin with employee data from backend
       onLogin({
