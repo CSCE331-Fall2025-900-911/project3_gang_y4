@@ -1,7 +1,26 @@
 // API Configuration
-// In production, use the environment variable
-// In development, use the proxy (empty string means relative URLs will use Vite proxy)
-const API_URL = import.meta.env.VITE_API_URL || '';
+// Priority:
+// 1. Vite build-time env `VITE_API_URL` (set in Render or during build)
+// 2. Runtime heuristic: if running on Render, use the deployed backend URL
+// 3. Development: empty string -> use relative URLs (Vite proxy)
+const BUILT_API_URL = import.meta.env.VITE_API_URL || '';
+
+// Runtime fallback: helps when the site is already built but VITE_API_URL wasn't provided.
+// Detect common Render hostnames and fall back to the known backend URL.
+const RUNTIME_FALLBACK = (() => {
+  try {
+    const host = window?.location?.hostname || '';
+    if (host.includes('onrender.com')) {
+      // Replace with your actual Render backend URL
+      return 'https://express-backend-yvwj.onrender.com';
+    }
+  } catch (e) {
+    // ignore
+  }
+  return '';
+})();
+
+const API_URL = BUILT_API_URL || RUNTIME_FALLBACK || '';
 
 export const API_ENDPOINTS = {
   // Menu
