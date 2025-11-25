@@ -520,37 +520,26 @@ function MenuTab() {
 
   // Fetch menu and dependencies on mount and when fetchTrigger changes
   useEffect(() => {
-    console.log('🍜 MenuTab useEffect triggered, fetchTrigger:', fetchTrigger);
     let isMounted = true;
 
     const loadMenuData = async () => {
       try {
-        console.log('🍜 Fetching menu items...');
         setLoading(true);
-        const res = await fetch('/api/menu');
+        const res = await fetch(`${import.meta.env.VITE_API_URL || ''}/api/menu`);
         const data = await res.json();
-        console.log('🍜 Menu items fetched:', data.length);
-
         if (!isMounted) return;
         setMenu(data);
 
-        // Fetch dependencies for all menu items in one batch call (optimized)
-        console.log('🍜 Fetching dependencies (batch)...');
+        // Try batch dependencies
         try {
-          const depsRes = await fetch('/api/menu/dependencies/batch');
+          const depsRes = await fetch(`${import.meta.env.VITE_API_URL || ''}/api/menu/dependencies/batch`);
           const allDeps = await depsRes.json();
-          console.log('🍜 Dependencies fetched in batch for', Object.keys(allDeps).length, 'items');
-        const res = await fetch(`${import.meta.env.VITE_API_URL || ''}/api/menu`);
-          if (!isMounted) return;
-
-          // Ensure all menu items have an entry (even if empty array)
           const depsMap = {};
           data.forEach(item => {
             depsMap[item.menuid] = allDeps[item.menuid] || [];
           });
-
           setDependencies(depsMap);
-          const depsRes = await fetch(`${import.meta.env.VITE_API_URL || ''}/api/menu/dependencies/batch`);
+        } catch (depsErr) {
           console.error('Error fetching batch dependencies:', depsErr);
           // Fallback: empty dependencies for all items
           if (isMounted) {
@@ -564,50 +553,41 @@ function MenuTab() {
       } catch (err) {
         console.error('Error fetching menu:', err);
       } finally {
-        if (isMounted) {
-          console.log('🍜 Setting loading to false');
-          setLoading(false);
-        }
+        if (isMounted) setLoading(false);
       }
     };
 
     loadMenuData();
 
-    return () => {
-      console.log('🍜 MenuTab cleanup');
-      isMounted = false;
-    };
+    return () => { isMounted = false; };
   }, [fetchTrigger]);
 
-  const fetchMenu = () => {
-    console.log('🍜 Triggering menu refresh');
-    setFetchTrigger(prev => prev + 1);
-  };
+  const fetchMenu = () => setFetchTrigger(prev => prev + 1);
 
   const handleSubmit = async (e) => {
     e.preventDefault();
     try {
       if (editing) {
-        await fetch(`/api/menu/${editing.menuid}`, {
+        await fetch(`${import.meta.env.VITE_API_URL || ''}/api/menu/${editing.menuid}`, {
           method: 'PUT',
           headers: { 'Content-Type': 'application/json' },
           body: JSON.stringify(formData)
         });
       } else {
-        await fetch('/api/menu', {
+        await fetch(`${import.meta.env.VITE_API_URL || ''}/api/menu`, {
           method: 'POST',
           headers: { 'Content-Type': 'application/json' },
           body: JSON.stringify(formData)
         });
       }
       setFormData({ menu_name: '', price: '', item_type: 'Tea' });
-        await fetch(`${import.meta.env.VITE_API_URL || ''}/api/menu/${editing.menuid}`, {
+      setEditing(null);
       fetchMenu();
     } catch (err) {
       console.error('Error saving menu item:', err);
     }
   };
-        await fetch(`${import.meta.env.VITE_API_URL || ''}/api/menu`, {
+
   const handleEdit = (item) => {
     setEditing(item);
     setFormData({ menu_name: item.menu_name, price: item.price, item_type: item.item_type });
@@ -616,7 +596,7 @@ function MenuTab() {
   const handleDelete = async (id) => {
     if (!confirm('Delete this menu item?')) return;
     try {
-      await fetch(`/api/menu/${id}`, { method: 'DELETE' });
+      await fetch(`${import.meta.env.VITE_API_URL || ''}/api/menu/${id}`, { method: 'DELETE' });
       fetchMenu();
     } catch (err) {
       console.error('Error deleting menu item:', err);
@@ -624,7 +604,6 @@ function MenuTab() {
   };
 
   if (loading) return <div className="loading">Loading menu...</div>;
-      await fetch(`${import.meta.env.VITE_API_URL || ''}/api/menu/${id}`, { method: 'DELETE' });
   return (
     <div className="tab-content">
       <h2>Menu Items Management</h2>
