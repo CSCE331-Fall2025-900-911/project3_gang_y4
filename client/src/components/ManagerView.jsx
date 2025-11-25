@@ -92,7 +92,7 @@ function InventoryTab() {
   const fetchInventory = async () => {
     try {
       console.log('🔍 Fetching inventory from API...');
-      const res = await fetch('/api/inventory');
+        const res = await fetch(`${import.meta.env.VITE_API_URL || ''}/api/inventory`);
       const data = await res.json();
       console.log('🔍 Inventory data received:', data);
       setInventory(data);
@@ -108,13 +108,13 @@ function InventoryTab() {
     e.preventDefault();
     try {
       if (editing) {
-        await fetch(`/api/inventory/${editing.ingredientid}`, {
+            await fetch(`${import.meta.env.VITE_API_URL || ''}/api/inventory/${editing.ingredientid}`, {
           method: 'PUT',
           headers: { 'Content-Type': 'application/json' },
           body: JSON.stringify(formData)
         });
       } else {
-        await fetch('/api/inventory', {
+            await fetch(`${import.meta.env.VITE_API_URL || ''}/api/inventory`, {
           method: 'POST',
           headers: { 'Content-Type': 'application/json' },
           body: JSON.stringify(formData)
@@ -136,7 +136,7 @@ function InventoryTab() {
   const handleDelete = async (id) => {
     if (!confirm('Delete this item?')) return;
     try {
-      await fetch(`/api/inventory/${id}`, { method: 'DELETE' });
+      await fetch(`${import.meta.env.VITE_API_URL || ''}/api/inventory/${id}`, { method: 'DELETE' });
       fetchInventory();
     } catch (err) {
       console.error('Error deleting inventory:', err);
@@ -216,7 +216,7 @@ function EmployeesTab() {
 
   const fetchEmployees = async () => {
     try {
-      const res = await fetch('/api/employees');
+        const res = await fetch(`${import.meta.env.VITE_API_URL || ''}/api/employees`);
       const data = await res.json();
       setEmployees(data);
     } catch (err) {
@@ -540,7 +540,7 @@ function MenuTab() {
           const depsRes = await fetch('/api/menu/dependencies/batch');
           const allDeps = await depsRes.json();
           console.log('🍜 Dependencies fetched in batch for', Object.keys(allDeps).length, 'items');
-
+        const res = await fetch(`${import.meta.env.VITE_API_URL || ''}/api/menu`);
           if (!isMounted) return;
 
           // Ensure all menu items have an entry (even if empty array)
@@ -550,7 +550,7 @@ function MenuTab() {
           });
 
           setDependencies(depsMap);
-        } catch (depsErr) {
+          const depsRes = await fetch(`${import.meta.env.VITE_API_URL || ''}/api/menu/dependencies/batch`);
           console.error('Error fetching batch dependencies:', depsErr);
           // Fallback: empty dependencies for all items
           if (isMounted) {
@@ -601,13 +601,13 @@ function MenuTab() {
         });
       }
       setFormData({ menu_name: '', price: '', item_type: 'Tea' });
-      setEditing(null);
+        await fetch(`${import.meta.env.VITE_API_URL || ''}/api/menu/${editing.menuid}`, {
       fetchMenu();
     } catch (err) {
       console.error('Error saving menu item:', err);
     }
   };
-
+        await fetch(`${import.meta.env.VITE_API_URL || ''}/api/menu`, {
   const handleEdit = (item) => {
     setEditing(item);
     setFormData({ menu_name: item.menu_name, price: item.price, item_type: item.item_type });
@@ -624,7 +624,7 @@ function MenuTab() {
   };
 
   if (loading) return <div className="loading">Loading menu...</div>;
-
+      await fetch(`${import.meta.env.VITE_API_URL || ''}/api/menu/${id}`, { method: 'DELETE' });
   return (
     <div className="tab-content">
       <h2>Menu Items Management</h2>
