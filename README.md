@@ -10,6 +10,11 @@ A modern, full-stack kiosk application for boba tea shops featuring customer sel
 ![Express](https://img.shields.io/badge/Express-4.21.2-000000?logo=express)
 ![Vite](https://img.shields.io/badge/Vite-6.0.3-646CFF?logo=vite)
 
+### 🌐 Live Demo
+
+**Frontend**: [https://react-frontend-zep1.onrender.com/](https://react-frontend-zep1.onrender.com/)  
+**Backend API**: [https://express-backend-yvwj.onrender.com](https://express-backend-yvwj.onrender.com)
+
 ## 📋 Table of Contents
 
 - [Features](#-features)
@@ -436,8 +441,13 @@ See [server/migrations/README.md](server/migrations/README.md) for detailed docu
 
 ### Base URL
 
-**Development**: `http://localhost:5001/api`
-**Production**: `https://express-backend-yvwj.onrender.com/api`
+**Frontend**:
+- **Development**: `http://localhost:3000`
+- **Production**: `https://react-frontend-zep1.onrender.com/`
+
+**Backend API**:
+- **Development**: `http://localhost:5001/api`
+- **Production**: `https://express-backend-yvwj.onrender.com/api`
 
 ### Health Check
 
@@ -1012,6 +1022,7 @@ Configuration in `render.yaml`:
   - Environment variables configured in Render dashboard
 
 - **Frontend**: React build served via Vite preview
+  - URL: `https://react-frontend-zep1.onrender.com/`
   - Build command: `npm install && npm run build`
   - Start command: `npm run preview`
   - Auto-deploys from main branch
