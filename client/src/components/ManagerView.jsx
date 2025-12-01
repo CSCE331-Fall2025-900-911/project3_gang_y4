@@ -92,7 +92,7 @@ function InventoryTab() {
   const fetchInventory = async () => {
     try {
       console.log('🔍 Fetching inventory from API...');
-        const res = await fetch(`${import.meta.env.VITE_API_URL || ''}/api/inventory`);
+        const res = await fetch(API_ENDPOINTS.INVENTORY);
       const data = await res.json();
       console.log('🔍 Inventory data received:', data);
       setInventory(data);
@@ -108,13 +108,13 @@ function InventoryTab() {
     e.preventDefault();
     try {
       if (editing) {
-            await fetch(`${import.meta.env.VITE_API_URL || ''}/api/inventory/${editing.ingredientid}`, {
+            await fetch(API_ENDPOINTS.INVENTORY_ITEM(editing.ingredientid), {
           method: 'PUT',
           headers: { 'Content-Type': 'application/json' },
           body: JSON.stringify(formData)
         });
       } else {
-            await fetch(`${import.meta.env.VITE_API_URL || ''}/api/inventory`, {
+            await fetch(API_ENDPOINTS.INVENTORY, {
           method: 'POST',
           headers: { 'Content-Type': 'application/json' },
           body: JSON.stringify(formData)
@@ -136,7 +136,7 @@ function InventoryTab() {
   const handleDelete = async (id) => {
     if (!confirm('Delete this item?')) return;
     try {
-      await fetch(`${import.meta.env.VITE_API_URL || ''}/api/inventory/${id}`, { method: 'DELETE' });
+      await fetch(API_ENDPOINTS.INVENTORY_ITEM(id), { method: 'DELETE' });
       fetchInventory();
     } catch (err) {
       console.error('Error deleting inventory:', err);
@@ -216,7 +216,7 @@ function EmployeesTab() {
 
   const fetchEmployees = async () => {
     try {
-        const res = await fetch(`${import.meta.env.VITE_API_URL || ''}/api/employees`);
+        const res = await fetch(API_ENDPOINTS.EMPLOYEES);
       const data = await res.json();
       setEmployees(data);
     } catch (err) {
@@ -230,13 +230,13 @@ function EmployeesTab() {
     e.preventDefault();
     try {
       if (editing) {
-        await fetch(`${import.meta.env.VITE_API_URL || ''}/api/employees/${editing.employeeid}`, {
+        await fetch(API_ENDPOINTS.EMPLOYEE(editing.employeeid), {
           method: 'PUT',
           headers: { 'Content-Type': 'application/json' },
           body: JSON.stringify(formData)
         });
       } else {
-        await fetch(`${import.meta.env.VITE_API_URL || ''}/api/employees`, {
+        await fetch(API_ENDPOINTS.EMPLOYEES, {
           method: 'POST',
           headers: { 'Content-Type': 'application/json' },
           body: JSON.stringify(formData)
@@ -258,7 +258,7 @@ function EmployeesTab() {
   const handleDelete = async (id) => {
     if (!confirm('Delete this employee?')) return;
     try {
-      await fetch(`${import.meta.env.VITE_API_URL || ''}/api/employees/${id}`, { method: 'DELETE' });
+      await fetch(API_ENDPOINTS.EMPLOYEE(id), { method: 'DELETE' });
       fetchEmployees();
     } catch (err) {
       console.error('Error deleting employee:', err);
@@ -328,7 +328,7 @@ function DependencyEditorModal({ menuItem, dependencies, onClose, onSave }) {
 
   const fetchAvailableIngredients = async () => {
     try {
-      const res = await fetch(`${import.meta.env.VITE_API_URL || ''}/api/inventory`);
+      const res = await fetch(API_ENDPOINTS.INVENTORY);
       const data = await res.json();
       setAvailableIngredients(data);
     } catch (err) {
@@ -359,7 +359,7 @@ function DependencyEditorModal({ menuItem, dependencies, onClose, onSave }) {
     setMessage({ type: '', text: '' });
 
     try {
-      const res = await fetch(`${import.meta.env.VITE_API_URL || ''}/api/menu/${menuItem.menuid}/dependencies`, {
+      const res = await fetch(API_ENDPOINTS.MENU_DEPENDENCIES(menuItem.menuid), {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
@@ -374,7 +374,7 @@ function DependencyEditorModal({ menuItem, dependencies, onClose, onSave }) {
       }
 
       // Refresh dependencies
-      const depsRes = await fetch(`${import.meta.env.VITE_API_URL || ''}/api/menu/${menuItem.menuid}/dependencies`);
+      const depsRes = await fetch(API_ENDPOINTS.MENU_DEPENDENCIES(menuItem.menuid));
       const depsData = await depsRes.json();
       setCurrentDependencies(depsData.dependencies);
 
@@ -396,7 +396,7 @@ function DependencyEditorModal({ menuItem, dependencies, onClose, onSave }) {
     setMessage({ type: '', text: '' });
 
     try {
-      const res = await fetch(`${import.meta.env.VITE_API_URL || ''}/api/menu/${menuItem.menuid}/dependencies/${inventoryId}`, {
+      const res = await fetch(API_ENDPOINTS.MENU_DEPENDENCY(menuItem.menuid, inventoryId), {
         method: 'DELETE'
       });
 
@@ -406,7 +406,7 @@ function DependencyEditorModal({ menuItem, dependencies, onClose, onSave }) {
       }
 
       // Refresh dependencies
-      const depsRes = await fetch(`${import.meta.env.VITE_API_URL || ''}/api/menu/${menuItem.menuid}/dependencies`);
+      const depsRes = await fetch(API_ENDPOINTS.MENU_DEPENDENCIES(menuItem.menuid));
       const depsData = await depsRes.json();
       setCurrentDependencies(depsData.dependencies);
 
@@ -525,14 +525,14 @@ function MenuTab() {
     const loadMenuData = async () => {
       try {
         setLoading(true);
-        const res = await fetch(`${import.meta.env.VITE_API_URL || ''}/api/menu`);
+        const res = await fetch(API_ENDPOINTS.MENU);
         const data = await res.json();
         if (!isMounted) return;
         setMenu(data);
 
         // Try batch dependencies
         try {
-          const depsRes = await fetch(`${import.meta.env.VITE_API_URL || ''}/api/menu/dependencies/batch`);
+          const depsRes = await fetch(API_ENDPOINTS.MENU_DEPENDENCIES_BATCH);
           const allDeps = await depsRes.json();
           const depsMap = {};
           data.forEach(item => {
@@ -568,13 +568,13 @@ function MenuTab() {
     e.preventDefault();
     try {
       if (editing) {
-        await fetch(`${import.meta.env.VITE_API_URL || ''}/api/menu/${editing.menuid}`, {
+        await fetch(API_ENDPOINTS.MENU_ITEM(editing.menuid), {
           method: 'PUT',
           headers: { 'Content-Type': 'application/json' },
           body: JSON.stringify(formData)
         });
       } else {
-        await fetch(`${import.meta.env.VITE_API_URL || ''}/api/menu`, {
+        await fetch(API_ENDPOINTS.MENU, {
           method: 'POST',
           headers: { 'Content-Type': 'application/json' },
           body: JSON.stringify(formData)
@@ -596,7 +596,7 @@ function MenuTab() {
   const handleDelete = async (id) => {
     if (!confirm('Delete this menu item?')) return;
     try {
-      await fetch(`${import.meta.env.VITE_API_URL || ''}/api/menu/${id}`, { method: 'DELETE' });
+      await fetch(API_ENDPOINTS.MENU_ITEM(id), { method: 'DELETE' });
       fetchMenu();
     } catch (err) {
       console.error('Error deleting menu item:', err);
@@ -1035,7 +1035,7 @@ function TrendsTab() {
 
   const fetchEmployees = async () => {
     try {
-      const res = await fetch(`${import.meta.env.VITE_API_URL || ''}/api/analytics/employees`);
+      const res = await fetch(API_ENDPOINTS.ANALYTICS_EMPLOYEES);
       if (!res.ok) throw new Error('Failed to fetch employees');
       const data = await res.json();
       setEmployees(data);
@@ -1068,7 +1068,7 @@ function TrendsTab() {
         params.append('employeeId', selectedEmployee);
       }
 
-      const res = await fetch(`${import.meta.env.VITE_API_URL || ''}/api/analytics/sales?${params}`);
+      const res = await fetch(`${API_ENDPOINTS.ANALYTICS_SALES}?${params}`);
       if (!res.ok) {
         throw new Error('Failed to fetch analytics data');
       }
@@ -1418,7 +1418,7 @@ function XReportTab() {
     console.log(`📊 Generating X Report for ${reportDate} ${startTime} to ${endTime}`);
 
     try {
-      const res = await fetch(`${import.meta.env.VITE_API_URL || ''}/api/reports/x?date=${reportDate}&startTime=${startTime}&endTime=${endTime}`);
+      const res = await fetch(`${API_ENDPOINTS.REPORTS_X}?date=${reportDate}&startTime=${startTime}&endTime=${endTime}`);
 
       if (!res.ok) {
         const errorData = await res.json();
