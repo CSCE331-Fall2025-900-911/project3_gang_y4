@@ -230,13 +230,13 @@ function EmployeesTab() {
     e.preventDefault();
     try {
       if (editing) {
-        await fetch(`/api/employees/${editing.employeeid}`, {
+        await fetch(`${import.meta.env.VITE_API_URL || ''}/api/employees/${editing.employeeid}`, {
           method: 'PUT',
           headers: { 'Content-Type': 'application/json' },
           body: JSON.stringify(formData)
         });
       } else {
-        await fetch('/api/employees', {
+        await fetch(`${import.meta.env.VITE_API_URL || ''}/api/employees`, {
           method: 'POST',
           headers: { 'Content-Type': 'application/json' },
           body: JSON.stringify(formData)
@@ -258,7 +258,7 @@ function EmployeesTab() {
   const handleDelete = async (id) => {
     if (!confirm('Delete this employee?')) return;
     try {
-      await fetch(`/api/employees/${id}`, { method: 'DELETE' });
+      await fetch(`${import.meta.env.VITE_API_URL || ''}/api/employees/${id}`, { method: 'DELETE' });
       fetchEmployees();
     } catch (err) {
       console.error('Error deleting employee:', err);
@@ -328,7 +328,7 @@ function DependencyEditorModal({ menuItem, dependencies, onClose, onSave }) {
 
   const fetchAvailableIngredients = async () => {
     try {
-      const res = await fetch('/api/inventory');
+      const res = await fetch(`${import.meta.env.VITE_API_URL || ''}/api/inventory`);
       const data = await res.json();
       setAvailableIngredients(data);
     } catch (err) {
@@ -359,7 +359,7 @@ function DependencyEditorModal({ menuItem, dependencies, onClose, onSave }) {
     setMessage({ type: '', text: '' });
 
     try {
-      const res = await fetch(`/api/menu/${menuItem.menuid}/dependencies`, {
+      const res = await fetch(`${import.meta.env.VITE_API_URL || ''}/api/menu/${menuItem.menuid}/dependencies`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
@@ -374,7 +374,7 @@ function DependencyEditorModal({ menuItem, dependencies, onClose, onSave }) {
       }
 
       // Refresh dependencies
-      const depsRes = await fetch(`/api/menu/${menuItem.menuid}/dependencies`);
+      const depsRes = await fetch(`${import.meta.env.VITE_API_URL || ''}/api/menu/${menuItem.menuid}/dependencies`);
       const depsData = await depsRes.json();
       setCurrentDependencies(depsData.dependencies);
 
@@ -396,7 +396,7 @@ function DependencyEditorModal({ menuItem, dependencies, onClose, onSave }) {
     setMessage({ type: '', text: '' });
 
     try {
-      const res = await fetch(`/api/menu/${menuItem.menuid}/dependencies/${inventoryId}`, {
+      const res = await fetch(`${import.meta.env.VITE_API_URL || ''}/api/menu/${menuItem.menuid}/dependencies/${inventoryId}`, {
         method: 'DELETE'
       });
 
@@ -406,7 +406,7 @@ function DependencyEditorModal({ menuItem, dependencies, onClose, onSave }) {
       }
 
       // Refresh dependencies
-      const depsRes = await fetch(`/api/menu/${menuItem.menuid}/dependencies`);
+      const depsRes = await fetch(`${import.meta.env.VITE_API_URL || ''}/api/menu/${menuItem.menuid}/dependencies`);
       const depsData = await depsRes.json();
       setCurrentDependencies(depsData.dependencies);
 
@@ -1035,7 +1035,7 @@ function TrendsTab() {
 
   const fetchEmployees = async () => {
     try {
-      const res = await fetch('/api/analytics/employees');
+      const res = await fetch(`${import.meta.env.VITE_API_URL || ''}/api/analytics/employees`);
       if (!res.ok) throw new Error('Failed to fetch employees');
       const data = await res.json();
       setEmployees(data);
@@ -1068,7 +1068,7 @@ function TrendsTab() {
         params.append('employeeId', selectedEmployee);
       }
 
-      const res = await fetch(`/api/analytics/sales?${params}`);
+      const res = await fetch(`${import.meta.env.VITE_API_URL || ''}/api/analytics/sales?${params}`);
       if (!res.ok) {
         throw new Error('Failed to fetch analytics data');
       }
@@ -1418,7 +1418,7 @@ function XReportTab() {
     console.log(`📊 Generating X Report for ${reportDate} ${startTime} to ${endTime}`);
 
     try {
-      const res = await fetch(`/api/reports/x?date=${reportDate}&startTime=${startTime}&endTime=${endTime}`);
+      const res = await fetch(`${import.meta.env.VITE_API_URL || ''}/api/reports/x?date=${reportDate}&startTime=${startTime}&endTime=${endTime}`);
 
       if (!res.ok) {
         const errorData = await res.json();
