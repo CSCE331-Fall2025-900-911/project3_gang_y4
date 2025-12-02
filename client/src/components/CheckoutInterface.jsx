@@ -1,4 +1,5 @@
 import React, { useState, useEffect } from 'react';
+import ReactDOM from 'react-dom';
 import CustomizationModal from './CustomizationModal';
 import { API_ENDPOINTS } from '../config/api';
 import '../styles/EmployeeView.css';
@@ -470,7 +471,7 @@ function CheckoutInterface({ user }) {
       )}
 
       {/* Customer Lookup Modal */}
-      {showCustomerLookup && (
+      {showCustomerLookup && ReactDOM.createPortal(
         <div className="modal-overlay" onClick={() => setShowCustomerLookup(false)}>
           <div className="modal-content customer-lookup-modal" onClick={(e) => e.stopPropagation()}>
             <button className="modal-close" onClick={() => setShowCustomerLookup(false)}>×</button>
@@ -511,11 +512,12 @@ function CheckoutInterface({ user }) {
               Guest Checkout
             </button>
           </div>
-        </div>
+        </div>,
+        document.body
       )}
 
       {/* Payment Method Selection Modal */}
-      {showPaymentModal && (
+      {showPaymentModal && ReactDOM.createPortal(
         <div className="modal-overlay" onClick={() => setShowPaymentModal(false)}>
           <div className="modal-content payment-modal" onClick={(e) => e.stopPropagation()}>
             <button className="modal-close" onClick={() => setShowPaymentModal(false)}>×</button>
@@ -540,7 +542,8 @@ function CheckoutInterface({ user }) {
               </button>
             </div>
           </div>
-        </div>
+        </div>,
+        document.body
       )}
     </>
   );
