@@ -1,4 +1,5 @@
 import React, { useState, useEffect } from 'react';
+import ReactDOM from 'react-dom';
 import { API_ENDPOINTS } from '../config/api';
 import '../styles/CustomizationModal.css';
 
@@ -161,7 +162,7 @@ function CustomizationModal({ item, onClose, onCancel, onConfirm, existingCustom
     // Show options if any exist (including the hardcoded Size check logic)
     const hasOptions = addons.length > 0 || customizations.ice.length > 0 || customizations.sweetness.length > 0 || customizations.size.length > 0;
 
-    return (
+    return ReactDOM.createPortal(
         <div className="modal-overlay" onClick={handleClose}>
             <div className="modal-content customization-modal" onClick={(e) => e.stopPropagation()}>
                 <button className="modal-close" onClick={handleClose}>×</button>
@@ -293,7 +294,8 @@ function CustomizationModal({ item, onClose, onCancel, onConfirm, existingCustom
                     </button>
                 </div>
             </div>
-        </div>
+        </div>,
+        document.body
     );
 }
 
