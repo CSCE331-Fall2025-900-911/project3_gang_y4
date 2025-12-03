@@ -39,6 +39,7 @@ export const API_ENDPOINTS = {
 
   // Auth
   AUTH_GOOGLE: `${API_URL}/api/auth/google`,
+  AUTH_EMAIL: `${API_URL}/api/auth/email`,
   AUTH_EMPLOYEE: `${API_URL}/api/auth/employee`,
   AUTH_MANAGER: `${API_URL}/api/auth/manager`,
 
