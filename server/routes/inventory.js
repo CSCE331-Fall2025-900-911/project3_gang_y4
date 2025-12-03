@@ -348,23 +348,35 @@ router.post('/', async (req, res) => {
   }
 });
 
-// Update inventory item name only - use /restock or /adjust for quantity changes
+// Update inventory item name and quantity
 router.put('/:id', async (req, res) => {
   try {
     const { id } = req.params;
-    const { item_name } = req.body;
+    const { item_name, quantity } = req.body;
 
     if (!item_name) {
       return res.status(400).json({ error: 'Item name is required' });
     }
 
-    const result = await query(
-      `UPDATE inventory
-       SET item_name = $1
-       WHERE ingredientid = $2
-       RETURNING *`,
-      [item_name, id]
-    );
+    // If quantity is provided, update both. Otherwise, just update name.
+    let result;
+    if (quantity !== undefined) {
+      result = await query(
+        `UPDATE inventory
+         SET item_name = $1, quantity = $2
+         WHERE ingredientid = $3
+         RETURNING *`,
+        [item_name, quantity, id]
+      );
+    } else {
+      result = await query(
+        `UPDATE inventory
+         SET item_name = $1
+         WHERE ingredientid = $2
+         RETURNING *`,
+        [item_name, id]
+      );
+    }
 
     if (result.rows.length === 0) {
       return res.status(404).json({ error: 'Inventory item not found' });
