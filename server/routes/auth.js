@@ -258,5 +258,63 @@ router.post('/manager', async (req, res) => {
   }
 });
 
+/**
+ * POST /api/auth/email
+ * Authenticates a customer user with email and password
+ *
+ * Request body: { email: string, password: string }
+ * Response: { success: true, user: { custid, username, first_name, last_name, rewards_points } }
+ *
+ * Note: Queries the customers table and verifies credentials.
+ * This is for regular customer users who sign up with email/password.
+ */
+router.post('/email', async (req, res) => {
+  try {
+    const { email, password } = req.body;
+
+    // Validate input
+    if (!email || !password) {
+      return res.status(400).json({ error: 'Email and password are required' });
+    }
+
+    // Query database for customer with matching email (username) and password
+    const customerResult = await query(
+      'SELECT customerid as custid, username, first_name, last_name, rewards_points FROM customers WHERE username = $1 AND password = $2',
+      [email, password]
+    );
+
+    // Check if customer exists
+    if (customerResult.rows.length === 0) {
+      return res.status(401).json({ error: 'Invalid email or password' });
+    }
+
+    const customer = customerResult.rows[0];
+
+    console.log('Customer authenticated via email:', customer.username);
+
+    // Return customer data
+    res.json({
+      success: true,
+      user: customer
+    });
+
+  } catch (error) {
+    console.error('Email authentication error:', error);
+
+    // Handle database errors
+    if (error.code === '42P01') { // Table doesn't exist
+      return res.status(500).json({
+        error: 'Database configuration error',
+        details: 'Customers table not found. Please ensure the database is properly set up.'
+      });
+    }
+
+    res.status(500).json({
+      error: 'Authentication failed',
+      details: error.message
+    });
+  }
+});
+
 export default router;
 

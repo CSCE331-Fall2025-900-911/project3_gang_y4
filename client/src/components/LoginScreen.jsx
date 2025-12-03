@@ -8,12 +8,16 @@ function LoginScreen({ onLogin }) {
   const navigate = useNavigate();
   const [showStaffLogin, setShowStaffLogin] = useState(false); // Employee/Manager selection screen
   const [showCredentialForm, setShowCredentialForm] = useState(false); // Username/password form
-  const [loginType, setLoginType] = useState(null); // 'employee' or 'manager'
+  const [showEmailLogin, setShowEmailLogin] = useState(false); // Email/password login form
+  const [loginType, setLoginType] = useState(null); // 'employee', 'manager', or 'email'
   const [credentials, setCredentials] = useState({ username: '', password: '' });
+  const [emailCredentials, setEmailCredentials] = useState({ email: '', password: '' });
   const [googleLoading, setGoogleLoading] = useState(false);
   const [googleError, setGoogleError] = useState(null);
   const [staffLoading, setStaffLoading] = useState(false);
   const [staffError, setStaffError] = useState(null);
+  const [emailLoading, setEmailLoading] = useState(false);
+  const [emailError, setEmailError] = useState(null);
 
   // Google OAuth login handler
   const handleGoogleLogin = useGoogleLogin({
@@ -85,10 +89,71 @@ function LoginScreen({ onLogin }) {
   });
 
   const handleEmailPhoneLogin = () => {
-    // TODO: Implement email/phone authentication
-    console.log('Email/Phone login clicked');
-    onLogin({ type: 'email', name: 'Email User' });
-    navigate('/customer');
+    setShowEmailLogin(true);
+  };
+
+  const handleEmailLoginSubmit = async (e) => {
+    e.preventDefault();
+    try {
+      setEmailLoading(true);
+      setEmailError(null);
+
+      // Send email and password to backend for verification
+      const response = await fetch(API_ENDPOINTS.AUTH_EMAIL, {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({
+          email: emailCredentials.email,
+          password: emailCredentials.password,
+        }),
+      });
+
+      // Read response text first to avoid json() throwing on empty responses
+      const raw = await response.text();
+      let data = null;
+      if (raw) {
+        try {
+          data = JSON.parse(raw);
+        } catch (e) {
+          console.error('Invalid JSON from server:', raw);
+          throw new Error('Invalid JSON received from server');
+        }
+      }
+
+      if (!response.ok) {
+        const errMsg = data?.error || data?.message || raw || `Server error ${response.status}`;
+        throw new Error(errMsg);
+      }
+
+      // Call onLogin with customer data from backend
+      onLogin({
+        id: data.user.custid,
+        type: 'email',
+        name: `${data.user.first_name || ''} ${data.user.last_name || ''}`.trim() || data.user.username,
+        email: data.user.username, // username field stores email
+        username: data.user.username,
+        custid: data.user.custid,
+        first_name: data.user.first_name,
+        last_name: data.user.last_name,
+        rewards_points: data.user.rewards_points,
+      });
+
+      // Navigate to customer view
+      navigate('/customer');
+    } catch (error) {
+      console.error('Email login error:', error);
+      setEmailError(error.message || 'Failed to authenticate');
+    } finally {
+      setEmailLoading(false);
+    }
+  };
+
+  const handleBackFromEmailLogin = () => {
+    setShowEmailLogin(false);
+    setEmailCredentials({ email: '', password: '' });
+    setEmailError(null);
   };
 
   const handleGuestLogin = () => {
@@ -180,12 +245,56 @@ function LoginScreen({ onLogin }) {
     setStaffError(null);
   };
 
+  // Show email login form
+  if (showEmailLogin) {
+    return (
+      <div className="login-screen">
+        <div className="login-container manager-login">
+          <h1>Sign in with Email</h1>
+          <form onSubmit={handleEmailLoginSubmit}>
+            {emailError && (
+              <div className="error-message" style={{ color: 'red', marginBottom: '10px' }}>
+                {emailError}
+              </div>
+            )}
+            <input
+              type="email"
+              placeholder="Email"
+              value={emailCredentials.email}
+              onChange={(e) => setEmailCredentials({ ...emailCredentials, email: e.target.value })}
+              required
+              disabled={emailLoading}
+            />
+            <input
+              type="password"
+              placeholder="Password"
+              value={emailCredentials.password}
+              onChange={(e) => setEmailCredentials({ ...emailCredentials, password: e.target.value })}
+              required
+              disabled={emailLoading}
+            />
+            <button type="submit" className="login-button" disabled={emailLoading}>
+              {emailLoading ? 'Logging in...' : 'Login'}
+            </button>
+            <button
+              type="button"
+              className="back-button"
+              onClick={handleBackFromEmailLogin}
+            >
+              ← Back
+            </button>
+          </form>
+        </div>
+      </div>
+    );
+  }
+
   // Show credential form (username/password)
   if (showCredentialForm) {
     return (
       <div className="login-screen">
         <div className="login-container manager-login">
-          
+
           <h1>{loginType === 'employee' ? 'Employee' : 'Manager'} Login</h1>
           <form onSubmit={handleStaffLogin}>
             {staffError && (
