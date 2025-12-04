@@ -1,4 +1,5 @@
 import React, { useState, useEffect } from 'react';
+import { createPortal } from 'react-dom';
 import { BarChart, Bar, LineChart, Line, PieChart, Pie, Cell, XAxis, YAxis, CartesianGrid, Tooltip, Legend, ResponsiveContainer } from 'recharts';
 import CheckoutInterface from './CheckoutInterface';
 import { API_ENDPOINTS } from '../config/api';
@@ -92,7 +93,7 @@ function InventoryTab() {
   const fetchInventory = async () => {
     try {
       console.log('🔍 Fetching inventory from API...');
-        const res = await fetch(API_ENDPOINTS.INVENTORY);
+      const res = await fetch(API_ENDPOINTS.INVENTORY);
       const data = await res.json();
       console.log('🔍 Inventory data received:', data);
       setInventory(data);
@@ -108,13 +109,13 @@ function InventoryTab() {
     e.preventDefault();
     try {
       if (editing) {
-            await fetch(API_ENDPOINTS.INVENTORY_ITEM(editing.ingredientid), {
+        await fetch(API_ENDPOINTS.INVENTORY_ITEM(editing.ingredientid), {
           method: 'PUT',
           headers: { 'Content-Type': 'application/json' },
           body: JSON.stringify(formData)
         });
       } else {
-            await fetch(API_ENDPOINTS.INVENTORY, {
+        await fetch(API_ENDPOINTS.INVENTORY, {
           method: 'POST',
           headers: { 'Content-Type': 'application/json' },
           body: JSON.stringify(formData)
@@ -216,7 +217,7 @@ function EmployeesTab() {
 
   const fetchEmployees = async () => {
     try {
-        const res = await fetch(API_ENDPOINTS.EMPLOYEES);
+      const res = await fetch(API_ENDPOINTS.EMPLOYEES);
       const data = await res.json();
       setEmployees(data);
     } catch (err) {
@@ -348,12 +349,9 @@ function DependencyEditorModal({ menuItem, dependencies, onClose, onSave }) {
       return;
     }
 
-    // Check if dependency already exists
+    // Check if dependency already exists (for UI feedback only, backend handles upsert)
     const exists = currentDependencies.some(dep => dep.inventory_id === parseInt(selectedIngredient));
-    if (exists) {
-      setMessage({ type: 'error', text: 'This ingredient is already added. Remove it first to change the quantity.' });
-      return;
-    }
+    // Removed the blocking check to allow updates
 
     setLoading(true);
     setMessage({ type: '', text: '' });
@@ -380,7 +378,7 @@ function DependencyEditorModal({ menuItem, dependencies, onClose, onSave }) {
 
       setSelectedIngredient('');
       setQuantity('');
-      setMessage({ type: 'success', text: 'Ingredient added successfully!' });
+      setMessage({ type: 'success', text: exists ? 'Ingredient updated successfully!' : 'Ingredient added successfully!' });
     } catch (err) {
       console.error('Error adding dependency:', err);
       setMessage({ type: 'error', text: err.message });
@@ -424,7 +422,7 @@ function DependencyEditorModal({ menuItem, dependencies, onClose, onSave }) {
     return ingredient ? ingredient.item_name : 'Unknown';
   };
 
-  return (
+  return createPortal(
     <div className="modal-overlay" onClick={onClose}>
       <div className="modal-content dependency-editor-modal" onClick={(e) => e.stopPropagation()}>
         <div className="modal-header">
@@ -450,13 +448,25 @@ function DependencyEditorModal({ menuItem, dependencies, onClose, onSave }) {
                     <span className="dependency-info">
                       <strong>{dep.name}</strong> - {dep.quantity_needed}g
                     </span>
-                    <button
-                      className="btn-remove"
-                      onClick={() => handleRemoveDependency(dep.inventory_id)}
-                      disabled={loading}
-                    >
-                      Remove
-                    </button>
+                    <div className="dependency-actions">
+                      <button
+                        className="btn-edit-dep"
+                        onClick={() => {
+                          setSelectedIngredient(dep.inventory_id);
+                          setQuantity(dep.quantity_needed);
+                        }}
+                        disabled={loading}
+                      >
+                        Edit
+                      </button>
+                      <button
+                        className="btn-remove"
+                        onClick={() => handleRemoveDependency(dep.inventory_id)}
+                        disabled={loading}
+                      >
+                        Remove
+                      </button>
+                    </div>
                   </li>
                 ))}
               </ul>
@@ -464,7 +474,7 @@ function DependencyEditorModal({ menuItem, dependencies, onClose, onSave }) {
           </div>
 
           <div className="add-dependency">
-            <h3>Add Ingredient:</h3>
+            <h3>{selectedIngredient && currentDependencies.some(d => d.inventory_id == selectedIngredient) ? 'Update Ingredient:' : 'Add Ingredient:'}</h3>
             <div className="add-dependency-form">
               <select
                 value={selectedIngredient}
@@ -492,18 +502,34 @@ function DependencyEditorModal({ menuItem, dependencies, onClose, onSave }) {
                 onClick={handleAddDependency}
                 disabled={loading}
               >
-                {loading ? 'Adding...' : 'Add'}
+                {loading ? 'Saving...' : (selectedIngredient && currentDependencies.some(d => d.inventory_id == selectedIngredient) ? 'Update' : 'Add')}
               </button>
             </div>
           </div>
         </div>
 
         <div className="modal-footer">
-          <button className="btn-cancel" onClick={onClose}>Close</button>
-          <button className="btn-save" onClick={onSave}>Save & Refresh</button>
+          <button className="btn-save" onClick={async () => {
+            // Auto-save if there's pending input
+            if (selectedIngredient && quantity) {
+              if (parseFloat(quantity) > 0) {
+                // We can't easily call handleAddDependency here because it uses state that might not be fresh or we want to await it.
+                // Actually, we can just call it. But we need to know if it succeeded.
+                // Let's just try to save.
+                try {
+                  await handleAddDependency();
+                } catch (e) {
+                  // If error, don't close?
+                  return;
+                }
+              }
+            }
+            onSave();
+          }}>Done</button>
         </div>
       </div>
-    </div>
+    </div>,
+    document.body
   );
 }
 
@@ -656,7 +682,7 @@ function MenuTab() {
               </td>
               <td>
                 <button onClick={() => handleEdit(item)} className="btn-edit">Edit</button>
-                <button onClick={() => setEditingDependencies(item)} className="btn-dependencies">Dependencies</button>
+                <button onClick={() => setEditingDependencies(item)} className="btn-dependencies">Manage Ingredients</button>
                 <button onClick={() => handleDelete(item.menuid)} className="btn-delete">Delete</button>
               </td>
             </tr>
