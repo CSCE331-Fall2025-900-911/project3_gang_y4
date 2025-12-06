@@ -163,7 +163,7 @@ function LoginScreen({ onLogin }) {
           <h1>Sign in with Email</h1>
           <form onSubmit={handleEmailLoginSubmit}>
             {emailError && (
-              <div className="error-message" style={{ color: 'red', marginBottom: '10px' }}>
+              <div className="login-error-message" style={{ color: 'red', marginBottom: '10px' }}>
                 {emailError}
               </div>
             )}
@@ -209,7 +209,7 @@ function LoginScreen({ onLogin }) {
 
         <div className="login-options">
           {googleError && (
-            <div className="error-message" style={{ color: 'red', marginBottom: '10px' }}>
+            <div className="login-error-message" style={{ color: 'red', marginBottom: '10px' }}>
               {googleError}
             </div>
           )}

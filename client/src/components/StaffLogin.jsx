@@ -94,7 +94,7 @@ const StaffLogin = ({ onLogin, onClose }) => {
                 </h2>
                 <form onSubmit={handleStaffLogin} style={{ display: 'flex', flexDirection: 'column', gap: '1rem' }}>
                     {staffError && (
-                        <div className="error-message" style={{ color: '#e74c3c', fontSize: '0.9rem', textAlign: 'center', padding: '0.5rem', background: 'rgba(231, 76, 60, 0.1)', borderRadius: '4px' }}>
+                        <div className="staff-login-error" style={{ color: '#e74c3c', fontSize: '0.9rem', textAlign: 'center', padding: '0.5rem', background: 'rgba(231, 76, 60, 0.1)', borderRadius: '4px' }}>
                             {staffError}
                         </div>
                     )}
