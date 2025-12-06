@@ -255,7 +255,9 @@ function CheckoutInterface({ user }) {
       });
 
       if (!response.ok) {
-        throw new Error('Failed to create order');
+        const errorData = await response.json();
+        console.error('Server error:', errorData);
+        throw new Error(errorData.error || 'Failed to create order');
       }
 
       // If not a guest, add rewards points (total cents spent)

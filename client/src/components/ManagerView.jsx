@@ -62,6 +62,12 @@ function ManagerView({ user, onLogout }) {
         >
           X Report
         </button>
+        <button
+          className={`tab-btn ${activeTab === 'zreport' ? 'active' : ''}`}
+          onClick={() => setActiveTab('zreport')}
+        >
+          Z Report
+        </button>
       </nav>
 
       <main className="manager-content">
@@ -72,6 +78,7 @@ function ManagerView({ user, onLogout }) {
         {activeTab === 'orders' && <OrdersTab />}
         {activeTab === 'trends' && <TrendsTab />}
         {activeTab === 'xreport' && <XReportTab />}
+        {activeTab === 'zreport' && <ZReportTab />}
       </main>
     </div>
   );
@@ -1715,3 +1722,183 @@ function XReportTab() {
 }
 
 export default ManagerView;
+
+// Z Report Tab
+function ZReportTab() {
+    const [date, setDate] = useState(new Date().toISOString().split('T')[0]);
+    const [report, setReport] = useState(null); // The full report object from DB
+    const [exists, setExists] = useState(false); // Whether a report exists for this date
+    const [loading, setLoading] = useState(false);
+    const [error, setError] = useState(null);
+
+    useEffect(() => {
+        checkStatus();
+    }, [date]);
+
+    const checkStatus = async () => {
+        try {
+            setLoading(true);
+            setError(null);
+            const res = await fetch(`${API_ENDPOINTS.REPORTS}/z?date=${date}`);
+            if (!res.ok) throw new Error('Failed to check status');
+            const data = await res.json();
+            setExists(data.exists);
+            setReport(data.report ? data.report.data : null); // data.report.data contains the JSON blob
+        } catch (err) {
+            console.error('Error checking Z Report:', err);
+            setError(err.message);
+        } finally {
+            setLoading(false);
+        }
+    };
+
+    const handleGenerate = async () => {
+        if (!confirm(`Generate Z Report for ${date}? This will close the day's sales.`)) return;
+
+        try {
+            setLoading(true);
+            setError(null);
+            const res = await fetch(`${API_ENDPOINTS.REPORTS}/z`, {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ date })
+            });
+
+            if (!res.ok) {
+                const errData = await res.json();
+                throw new Error(errData.error || 'Failed to generate report');
+            }
+
+            await checkStatus(); // Refresh to show the new report
+        } catch (err) {
+            console.error('Error generating report:', err);
+            setError(err.message);
+        } finally {
+            setLoading(false);
+        }
+    };
+
+    const handleClear = async () => {
+        if (!confirm(`Warning: Clearing the Z Report for ${date} will allow it to be regenerated. Continue?`)) return;
+
+        try {
+            setLoading(true);
+            setError(null);
+            const res = await fetch(`${API_ENDPOINTS.REPORTS}/z?date=${date}`, {
+                method: 'DELETE'
+            });
+
+            if (!res.ok) throw new Error('Failed to clear report');
+
+            await checkStatus(); // Refresh to reset state
+        } catch (err) {
+            console.error('Error clearing report:', err);
+            setError(err.message);
+        } finally {
+            setLoading(false);
+        }
+    };
+
+    return (
+        <div className="tab-content">
+            <h2>Z Report (End of Day)</h2>
+
+            <div className="report-controls">
+                <div className="control-group">
+                    <label>Date:</label>
+                    <input
+                        type="date"
+                        value={date}
+                        onChange={(e) => setDate(e.target.value)}
+                        max={new Date().toISOString().split('T')[0]}
+                    />
+                </div>
+
+                <div className="action-buttons">
+                    {!exists ? (
+                        <button
+                            className="btn-generate"
+                            onClick={handleGenerate}
+                            disabled={loading}
+                        >
+                            {loading ? 'Generating...' : 'Generate Z Report'}
+                        </button>
+                    ) : (
+                        <button
+                            className="btn-delete"
+                            onClick={handleClear}
+                            disabled={loading}
+                        >
+                            {loading ? 'Clearing...' : 'Clear Report'}
+                        </button>
+                    )}
+                </div>
+            </div>
+
+            {error && <div className="error-message">{error}</div>}
+
+            {exists && report && (
+                <div className="report-results">
+                    <div className="report-header">
+                        <h3>Z Report for {date}</h3>
+                        <span className="timestamp">Generated: {new Date().toLocaleString()}</span>
+                    </div>
+
+                    <div className="metrics-grid">
+                        <div className="metric-card">
+                            <h4>Total Orders</h4>
+                            <div className="value">{report.summary.transaction_count}</div>
+                        </div>
+                        <div className="metric-card">
+                            <h4>Gross Sales</h4>
+                            <div className="value">${parseFloat(report.summary.net_sales).toFixed(2)}</div>
+                        </div>
+                        <div className="metric-card">
+                            <h4>Tax</h4>
+                            <div className="value">${parseFloat(report.summary.total_tax).toFixed(2)}</div>
+                        </div>
+                        <div className="metric-card highlight">
+                            <h4>Net Sales</h4>
+                            <div className="value">${parseFloat(report.summary.total_sales).toFixed(2)}</div>
+                        </div>
+                    </div>
+
+                    <div className="charts-container">
+                        <div className="chart-wrapper">
+                            <h4>Payment Methods</h4>
+                            {report.payment_breakdown && report.payment_breakdown.length > 0 ? (
+                                <ResponsiveContainer width="100%" height={300}>
+                                    <PieChart>
+                                        <Pie
+                                            data={report.payment_breakdown}
+                                            dataKey="amount"
+                                            nameKey="payment_method"
+                                            cx="50%"
+                                            cy="50%"
+                                            outerRadius={80}
+                                            fill="#8884d8"
+                                            label={(entry) => `${entry.payment_method}: $${parseFloat(entry.amount)}`}
+                                        >
+                                            {report.payment_breakdown.map((entry, index) => (
+                                                <Cell key={`cell-${index}`} fill={['#0088FE', '#00C49F', '#FFBB28', '#FF8042'][index % 4]} />
+                                            ))}
+                                        </Pie>
+                                        <Tooltip formatter={(value) => `$${parseFloat(value).toFixed(2)}`} />
+                                        <Legend />
+                                    </PieChart>
+                                </ResponsiveContainer>
+                            ) : <p>No payment data available.</p>}
+                        </div>
+                    </div>
+                </div>
+            )}
+
+            {!exists && !loading && (
+                <div className="empty-state">
+                    <p>No Z Report generated for this date.</p>
+                    <p>Click "Generate" to close the day and create the report.</p>
+                </div>
+            )}
+        </div>
+    );
+}

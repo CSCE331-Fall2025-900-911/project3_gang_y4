@@ -26,11 +26,11 @@ export const API_ENDPOINTS = {
   // Menu
   MENU_GROUPED: `${API_URL}/api/menu/grouped`,
   MENU_ITEMS: `${API_URL}/api/menu/items`,
-  
+
   // Customizations
   CUSTOMIZATIONS_ADDONS: `${API_URL}/api/customizations/addons`,
   CUSTOMIZATIONS_GROUPED: `${API_URL}/api/customizations/grouped`,
-  
+
   // Orders
   ORDERS: `${API_URL}/api/orders`,
   ORDERS_CUSTOMER_HISTORY: (customerId) => `${API_URL}/api/orders/customer/${customerId}`,
@@ -62,6 +62,7 @@ export const API_ENDPOINTS = {
   ANALYTICS_EMPLOYEES: `${API_URL}/api/analytics/employees`,
 
   // Reports
+  REPORTS: `${API_URL}/api/reports`,
   REPORTS_X: `${API_URL}/api/reports/x`,
 
   // Employees
