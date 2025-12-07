@@ -41,6 +41,7 @@ server/.env.production
 .idea/
 *.swp
 *.swo
+.claude/
 
 # Build outputs
 dist/
