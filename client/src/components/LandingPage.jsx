@@ -33,7 +33,7 @@ const LandingPage = ({ onLogin }) => {
                 <header className="landing__header">
                     <div className="landing__logo">
                         <span className="landing__logo-icon">🧋</span>
-                        <h1 className="landing__logo-text">ShareTea</h1>
+                        <h1 className="landing__logo-text">Kung Fu Tea</h1>
                     </div>
                     <p className="landing__tagline">Premium Bubble Tea Experience</p>
                 </header>
@@ -66,7 +66,7 @@ const LandingPage = ({ onLogin }) => {
                     </div>
                     <div className="action-card__arrow">
                         <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5">
-                            <path d="M5 12h14M12 5l7 7-7 7" strokeLinecap="round" strokeLinejoin="round"/>
+                            <path d="M5 12h14M12 5l7 7-7 7" strokeLinecap="round" strokeLinejoin="round" />
                         </svg>
                     </div>
                 </article>
@@ -87,7 +87,7 @@ const LandingPage = ({ onLogin }) => {
                     </div>
                     <div className="action-card__arrow">
                         <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5">
-                            <path d="M5 12h14M12 5l7 7-7 7" strokeLinecap="round" strokeLinejoin="round"/>
+                            <path d="M5 12h14M12 5l7 7-7 7" strokeLinecap="round" strokeLinejoin="round" />
                         </svg>
                     </div>
                 </article>
@@ -107,7 +107,7 @@ const LandingPage = ({ onLogin }) => {
                             aria-label="Close modal"
                         >
                             <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5">
-                                <path d="M18 6L6 18M6 6l12 12" strokeLinecap="round" strokeLinejoin="round"/>
+                                <path d="M18 6L6 18M6 6l12 12" strokeLinecap="round" strokeLinejoin="round" />
                             </svg>
                         </button>
                         <StaffLogin onLogin={onLogin} onClose={handleCloseStaffLogin} />

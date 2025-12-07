@@ -288,7 +288,7 @@ function CustomerKiosk({ user, onLogout }) {
         <header className="kiosk__header">
           <div className="kiosk__brand">
             <span className="kiosk__brand-icon">🧋</span>
-            <h1 className="kiosk__brand-name">ShareTea</h1>
+            <h1 className="kiosk__brand-name">Kung Fu Tea</h1>
           </div>
           <div className="kiosk__user">
             <span className="kiosk__greeting">Welcome, {user.name}</span>
