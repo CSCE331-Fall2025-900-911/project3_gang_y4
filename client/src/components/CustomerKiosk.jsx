@@ -3,6 +3,7 @@ import CustomizationModal from './CustomizationModal';
 import OrderHistoryModal from './OrderHistoryModal';
 import { API_ENDPOINTS } from '../config/api';
 import placeholderImage from '../images/placeholdertea.png';
+import WeatherBackground from './WeatherBackground';
 import '../styles/CustomerKiosk.css';
 
 function CustomerKiosk({ user, onLogout }) {
@@ -281,236 +282,238 @@ function CustomerKiosk({ user, onLogout }) {
   };
 
   return (
-    <div className="kiosk">
-      {/* Header */}
-      <header className="kiosk__header">
-        <div className="kiosk__brand">
-          <span className="kiosk__brand-icon">🧋</span>
-          <h1 className="kiosk__brand-name">ShareTea</h1>
-        </div>
-        <div className="kiosk__user">
-          <span className="kiosk__greeting">Welcome, {user.name}</span>
-          {customerInfo && !customerInfo.is_guest && customerInfo.rewards_points !== undefined && (
-            <div className="kiosk__rewards">
-              <span className="kiosk__rewards-icon">⭐</span>
-              <span className="kiosk__rewards-points">{customerInfo.rewards_points}</span>
-            </div>
-          )}
-          {customerInfo && !customerInfo.is_guest && customerInfo.custid && (
-            <button className="kiosk__btn kiosk__btn--ghost" onClick={() => setShowOrderHistory(true)}>
-              Orders
-            </button>
-          )}
-          <button className="kiosk__btn kiosk__btn--outline" onClick={onLogout}>
-            Sign Out
-          </button>
-        </div>
-      </header>
-
-      <div className="kiosk__body">
-        {/* Categories Sidebar */}
-        <nav className="kiosk__nav">
-          <h2 className="kiosk__nav-title">Menu</h2>
-          {loading ? (
-            <div className="kiosk__nav-loading">Loading...</div>
-          ) : (
-            <ul className="kiosk__nav-list">
-              {menuData.map((category) => (
-                <li key={category.category}>
-                  <button
-                    className={`kiosk__nav-item ${activeCategory === category.category ? 'kiosk__nav-item--active' : ''}`}
-                    onClick={() => scrollToCategory(category.category)}
-                  >
-                    <span className="kiosk__nav-dot" style={{ background: getCategoryColor(category.category) }} />
-                    <span className="kiosk__nav-text">{category.category}</span>
-                    <span className="kiosk__nav-count">{category.items.length}</span>
-                  </button>
-                </li>
-              ))}
-            </ul>
-          )}
-        </nav>
-
-        {/* Menu Content */}
-        <main className="kiosk__menu">
-          {loading ? (
-            <div className="kiosk__loading">
-              <div className="kiosk__spinner" />
-              <p>Loading menu...</p>
-            </div>
-          ) : error ? (
-            <div className="kiosk__error">
-              <p>{error}</p>
-              <button className="kiosk__btn kiosk__btn--primary" onClick={() => window.location.reload()}>
-                Try Again
+    <WeatherBackground>
+      <div className="kiosk">
+        {/* Header */}
+        <header className="kiosk__header">
+          <div className="kiosk__brand">
+            <span className="kiosk__brand-icon">🧋</span>
+            <h1 className="kiosk__brand-name">ShareTea</h1>
+          </div>
+          <div className="kiosk__user">
+            <span className="kiosk__greeting">Welcome, {user.name}</span>
+            {customerInfo && !customerInfo.is_guest && customerInfo.rewards_points !== undefined && (
+              <div className="kiosk__rewards">
+                <span className="kiosk__rewards-icon">⭐</span>
+                <span className="kiosk__rewards-points">{customerInfo.rewards_points}</span>
+              </div>
+            )}
+            {customerInfo && !customerInfo.is_guest && customerInfo.custid && (
+              <button className="kiosk__btn kiosk__btn--ghost" onClick={() => setShowOrderHistory(true)}>
+                Orders
               </button>
-            </div>
-          ) : (
-            <div className="kiosk__menu-scroll">
-              {menuData.map((category) => (
-                <section
-                  key={category.category}
-                  id={`category-${category.category.replace(/\s+/g, '-')}`}
-                  data-category={category.category}
-                  className="kiosk__category"
-                >
-                  <header className="kiosk__category-header">
-                    <div className="kiosk__category-accent" style={{ background: getCategoryColor(category.category) }} />
-                    <h2 className="kiosk__category-title">{category.category}</h2>
-                  </header>
-                  <div className="kiosk__products">
-                    {category.items.map((item) => (
-                      <article
-                        key={item.id}
-                        className="product-card"
-                        onClick={() => openCustomizationModal(item)}
-                      >
-                        <div className="product-card__image-wrap" style={{ background: getCategoryBgColor(category.category) }}>
-                          <img
-                            src={getImage(item.name) || placeholderImage}
-                            alt={item.name}
-                            className="product-card__image"
-                            loading="lazy"
-                          />
-                          <div className="product-card__overlay">
-                            <span className="product-card__add">+ Add</span>
-                          </div>
-                        </div>
-                        <div className="product-card__body">
-                          <h3 className="product-card__name">{item.name}</h3>
-                          <p className="product-card__price">${item.price.toFixed(2)}</p>
-                        </div>
-                      </article>
-                    ))}
-                  </div>
-                </section>
-              ))}
-            </div>
-          )}
-        </main>
+            )}
+            <button className="kiosk__btn kiosk__btn--outline" onClick={onLogout}>
+              Sign Out
+            </button>
+          </div>
+        </header>
 
-        {/* Cart Sidebar */}
-        <aside className="kiosk__cart">
-          <header className="kiosk__cart-header">
-            <h2 className="kiosk__cart-title">Your Order</h2>
-            <span className="kiosk__cart-count">{cart.reduce((sum, item) => sum + item.quantity, 0)}</span>
-          </header>
+        <div className="kiosk__body">
+          {/* Categories Sidebar */}
+          <nav className="kiosk__nav">
+            <h2 className="kiosk__nav-title">Menu</h2>
+            {loading ? (
+              <div className="kiosk__nav-loading">Loading...</div>
+            ) : (
+              <ul className="kiosk__nav-list">
+                {menuData.map((category) => (
+                  <li key={category.category}>
+                    <button
+                      className={`kiosk__nav-item ${activeCategory === category.category ? 'kiosk__nav-item--active' : ''}`}
+                      onClick={() => scrollToCategory(category.category)}
+                    >
+                      <span className="kiosk__nav-dot" style={{ background: getCategoryColor(category.category) }} />
+                      <span className="kiosk__nav-text">{category.category}</span>
+                      <span className="kiosk__nav-count">{category.items.length}</span>
+                    </button>
+                  </li>
+                ))}
+              </ul>
+            )}
+          </nav>
 
-          <div className="kiosk__cart-items">
-            {cart.length === 0 ? (
-              <div className="kiosk__cart-empty">
-                <span className="kiosk__cart-empty-icon">🛒</span>
-                <p>Your cart is empty</p>
-                <span>Tap items to add them</span>
+          {/* Menu Content */}
+          <main className="kiosk__menu">
+            {loading ? (
+              <div className="kiosk__loading">
+                <div className="kiosk__spinner" />
+                <p>Loading menu...</p>
+              </div>
+            ) : error ? (
+              <div className="kiosk__error">
+                <p>{error}</p>
+                <button className="kiosk__btn kiosk__btn--primary" onClick={() => window.location.reload()}>
+                  Try Again
+                </button>
               </div>
             ) : (
-              cart.map((item, index) => (
-                <article key={index} className="cart-item">
-                  <div className="cart-item__main" onClick={() => openEditCustomization(index)}>
-                    <div className="cart-item__info">
-                      <h4 className="cart-item__name">{item.displayName || item.name}</h4>
-                      {item.customizations?.length > 0 && (
-                        <div className="cart-item__mods">
-                          {item.customizations.map((c, i) => (
-                            <span key={i} className="cart-item__mod">{c.name}</span>
-                          ))}
-                        </div>
-                      )}
+              <div className="kiosk__menu-scroll">
+                {menuData.map((category) => (
+                  <section
+                    key={category.category}
+                    id={`category-${category.category.replace(/\s+/g, '-')}`}
+                    data-category={category.category}
+                    className="kiosk__category"
+                  >
+                    <header className="kiosk__category-header">
+                      <div className="kiosk__category-accent" style={{ background: getCategoryColor(category.category) }} />
+                      <h2 className="kiosk__category-title">{category.category}</h2>
+                    </header>
+                    <div className="kiosk__products">
+                      {category.items.map((item) => (
+                        <article
+                          key={item.id}
+                          className="product-card"
+                          onClick={() => openCustomizationModal(item)}
+                        >
+                          <div className="product-card__image-wrap" style={{ background: getCategoryBgColor(category.category) }}>
+                            <img
+                              src={getImage(item.name) || placeholderImage}
+                              alt={item.name}
+                              className="product-card__image"
+                              loading="lazy"
+                            />
+                            <div className="product-card__overlay">
+                              <span className="product-card__add">+ Add</span>
+                            </div>
+                          </div>
+                          <div className="product-card__body">
+                            <h3 className="product-card__name">{item.name}</h3>
+                            <p className="product-card__price">${item.price.toFixed(2)}</p>
+                          </div>
+                        </article>
+                      ))}
                     </div>
-                    <span className="cart-item__price">${item.totalPrice.toFixed(2)}</span>
-                  </div>
-                  <div className="cart-item__actions">
-                    <button className="cart-item__qty-btn" onClick={() => removeFromCart(index)}>−</button>
-                    <span className="cart-item__qty">{item.quantity}</span>
-                    <button className="cart-item__qty-btn" onClick={() => addQuantity(index)}>+</button>
-                    <button className="cart-item__delete" onClick={() => deleteFromCart(index)}>
-                      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
-                        <path d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16" strokeLinecap="round" strokeLinejoin="round" />
-                      </svg>
-                    </button>
-                  </div>
-                </article>
-              ))
+                  </section>
+                ))}
+              </div>
             )}
-          </div>
+          </main>
 
-          <footer className="kiosk__cart-footer">
-            <div className="kiosk__cart-summary">
-              <div className="kiosk__cart-row">
-                <span>Subtotal</span>
-                <span>${calculateSubtotal().toFixed(2)}</span>
-              </div>
-              <div className="kiosk__cart-row">
-                <span>Tax (8.25%)</span>
-                <span>${calculateTax().toFixed(2)}</span>
-              </div>
-              <div className="kiosk__cart-row kiosk__cart-row--total">
-                <span>Total</span>
-                <span>${calculateTotalWithTax().toFixed(2)}</span>
-              </div>
-            </div>
-            <div className="kiosk__cart-actions">
-              <button
-                className="kiosk__btn kiosk__btn--cancel"
-                onClick={handleCancelOrder}
-                disabled={cart.length === 0}
-              >
-                Cancel
-              </button>
-              <button
-                className="kiosk__btn kiosk__btn--checkout"
-                onClick={initiateCheckout}
-                disabled={cart.length === 0}
-              >
-                Pay ${calculateTotalWithTax().toFixed(2)}
-              </button>
-            </div>
-          </footer>
-        </aside>
-      </div>
-
-      {/* Customization Modal */}
-      {showCustomizationModal && selectedItem && (
-        <CustomizationModal
-          item={selectedItem}
-          onClose={() => { setShowCustomizationModal(false); setSelectedItem(null); setEditingCartIndex(null); }}
-          onConfirm={handleCustomizationConfirm}
-          existingCustomizations={editingCartIndex !== null ? cart[editingCartIndex].customizations : null}
-        />
-      )}
-
-      {/* Payment Modal */}
-      {showPaymentModal && (
-        <div className="modal-backdrop" onClick={() => setShowPaymentModal(false)}>
-          <dialog className="payment-modal" open onClick={(e) => e.stopPropagation()}>
-            <button className="payment-modal__close" onClick={() => setShowPaymentModal(false)}>
-              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5">
-                <path d="M18 6L6 18M6 6l12 12" strokeLinecap="round" strokeLinejoin="round" />
-              </svg>
-            </button>
-            <header className="payment-modal__header">
-              <h2>How would you like to pay?</h2>
-              <p>Total: ${calculateTotalWithTax().toFixed(2)}</p>
+          {/* Cart Sidebar */}
+          <aside className="kiosk__cart">
+            <header className="kiosk__cart-header">
+              <h2 className="kiosk__cart-title">Your Order</h2>
+              <span className="kiosk__cart-count">{cart.reduce((sum, item) => sum + item.quantity, 0)}</span>
             </header>
-            <div className="payment-modal__options">
-              <button className="payment-option payment-option--cash" onClick={() => handlePaymentSelection('cash')}>
-                <span className="payment-option__icon">💵</span>
-                <span className="payment-option__label">Cash</span>
-              </button>
-              <button className="payment-option payment-option--card" onClick={() => handlePaymentSelection('credit_card')}>
-                <span className="payment-option__icon">💳</span>
-                <span className="payment-option__label">Card</span>
-              </button>
-            </div>
-          </dialog>
-        </div>
-      )}
 
-      {/* Order History Modal */}
-      {showOrderHistory && customerInfo?.custid && (
-        <OrderHistoryModal customerId={customerInfo.custid} onClose={() => setShowOrderHistory(false)} />
-      )}
-    </div>
+            <div className="kiosk__cart-items">
+              {cart.length === 0 ? (
+                <div className="kiosk__cart-empty">
+                  <span className="kiosk__cart-empty-icon">🛒</span>
+                  <p>Your cart is empty</p>
+                  <span>Tap items to add them</span>
+                </div>
+              ) : (
+                cart.map((item, index) => (
+                  <article key={index} className="cart-item">
+                    <div className="cart-item__main" onClick={() => openEditCustomization(index)}>
+                      <div className="cart-item__info">
+                        <h4 className="cart-item__name">{item.displayName || item.name}</h4>
+                        {item.customizations?.length > 0 && (
+                          <div className="cart-item__mods">
+                            {item.customizations.map((c, i) => (
+                              <span key={i} className="cart-item__mod">{c.name}</span>
+                            ))}
+                          </div>
+                        )}
+                      </div>
+                      <span className="cart-item__price">${item.totalPrice.toFixed(2)}</span>
+                    </div>
+                    <div className="cart-item__actions">
+                      <button className="cart-item__qty-btn" onClick={() => removeFromCart(index)}>−</button>
+                      <span className="cart-item__qty">{item.quantity}</span>
+                      <button className="cart-item__qty-btn" onClick={() => addQuantity(index)}>+</button>
+                      <button className="cart-item__delete" onClick={() => deleteFromCart(index)}>
+                        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
+                          <path d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16" strokeLinecap="round" strokeLinejoin="round" />
+                        </svg>
+                      </button>
+                    </div>
+                  </article>
+                ))
+              )}
+            </div>
+
+            <footer className="kiosk__cart-footer">
+              <div className="kiosk__cart-summary">
+                <div className="kiosk__cart-row">
+                  <span>Subtotal</span>
+                  <span>${calculateSubtotal().toFixed(2)}</span>
+                </div>
+                <div className="kiosk__cart-row">
+                  <span>Tax (8.25%)</span>
+                  <span>${calculateTax().toFixed(2)}</span>
+                </div>
+                <div className="kiosk__cart-row kiosk__cart-row--total">
+                  <span>Total</span>
+                  <span>${calculateTotalWithTax().toFixed(2)}</span>
+                </div>
+              </div>
+              <div className="kiosk__cart-actions">
+                <button
+                  className="kiosk__btn kiosk__btn--cancel"
+                  onClick={handleCancelOrder}
+                  disabled={cart.length === 0}
+                >
+                  Cancel
+                </button>
+                <button
+                  className="kiosk__btn kiosk__btn--checkout"
+                  onClick={initiateCheckout}
+                  disabled={cart.length === 0}
+                >
+                  Pay ${calculateTotalWithTax().toFixed(2)}
+                </button>
+              </div>
+            </footer>
+          </aside>
+        </div>
+
+        {/* Customization Modal */}
+        {showCustomizationModal && selectedItem && (
+          <CustomizationModal
+            item={selectedItem}
+            onClose={() => { setShowCustomizationModal(false); setSelectedItem(null); setEditingCartIndex(null); }}
+            onConfirm={handleCustomizationConfirm}
+            existingCustomizations={editingCartIndex !== null ? cart[editingCartIndex].customizations : null}
+          />
+        )}
+
+        {/* Payment Modal */}
+        {showPaymentModal && (
+          <div className="modal-backdrop" onClick={() => setShowPaymentModal(false)}>
+            <dialog className="payment-modal" open onClick={(e) => e.stopPropagation()}>
+              <button className="payment-modal__close" onClick={() => setShowPaymentModal(false)}>
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5">
+                  <path d="M18 6L6 18M6 6l12 12" strokeLinecap="round" strokeLinejoin="round" />
+                </svg>
+              </button>
+              <header className="payment-modal__header">
+                <h2>How would you like to pay?</h2>
+                <p>Total: ${calculateTotalWithTax().toFixed(2)}</p>
+              </header>
+              <div className="payment-modal__options">
+                <button className="payment-option payment-option--cash" onClick={() => handlePaymentSelection('cash')}>
+                  <span className="payment-option__icon">💵</span>
+                  <span className="payment-option__label">Cash</span>
+                </button>
+                <button className="payment-option payment-option--card" onClick={() => handlePaymentSelection('credit_card')}>
+                  <span className="payment-option__icon">💳</span>
+                  <span className="payment-option__label">Card</span>
+                </button>
+              </div>
+            </dialog>
+          </div>
+        )}
+
+        {/* Order History Modal */}
+        {showOrderHistory && customerInfo?.custid && (
+          <OrderHistoryModal customerId={customerInfo.custid} onClose={() => setShowOrderHistory(false)} />
+        )}
+      </div>
+    </WeatherBackground>
   );
 }
 

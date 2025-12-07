@@ -10,7 +10,8 @@
   padding: var(--space-6);
   position: relative;
   overflow: hidden;
-  background: linear-gradient(180deg, var(--neutral-100) 0%, var(--neutral-200) 100%);
+  /* background: linear-gradient(180deg, var(--neutral-100) 0%, var(--neutral-200) 100%); */
+  background: transparent;
 }
 
 /* ========== BACKGROUND ========== */
@@ -19,6 +20,8 @@
   inset: 0;
   overflow: hidden;
   z-index: 0;
+  display: none;
+  /* Hide original background elements */
 }
 
 .login__bg-orb {

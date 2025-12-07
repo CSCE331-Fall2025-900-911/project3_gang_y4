@@ -6,7 +6,8 @@
   display: flex;
   flex-direction: column;
   height: 100vh;
-  background: var(--neutral-100);
+  /* background: var(--neutral-100); */
+  background: transparent;
   overflow: hidden;
 }
 
@@ -16,7 +17,9 @@
   align-items: center;
   justify-content: space-between;
   padding: var(--space-4) var(--space-8);
-  background: var(--neutral-0);
+  padding: var(--space-4) var(--space-8);
+  background: rgba(255, 255, 255, 0.9);
+  backdrop-filter: blur(8px);
   border-bottom: 1px solid var(--neutral-200);
   z-index: var(--z-sticky);
 }
@@ -120,7 +123,8 @@
 
 /* ========== NAV SIDEBAR ========== */
 .kiosk__nav {
-  background: var(--neutral-0);
+  background: rgba(255, 255, 255, 0.8);
+  backdrop-filter: blur(8px);
   border-right: 1px solid var(--neutral-200);
   padding: var(--space-6);
   overflow-y: auto;
@@ -202,7 +206,7 @@
 /* ========== MENU SECTION ========== */
 .kiosk__menu {
   overflow: hidden;
-  background: var(--neutral-50);
+  background: transparent;
 }
 
 .kiosk__loading,

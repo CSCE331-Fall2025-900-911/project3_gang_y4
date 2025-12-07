@@ -6,6 +6,7 @@ import LandingPage from './components/LandingPage';
 import CustomerKiosk from './components/CustomerKiosk';
 import EmployeeView from './components/EmployeeView';
 import ManagerView from './components/ManagerView';
+import { WeatherProvider } from './context/WeatherContext';
 import './styles/App.css';
 
 function App() {
@@ -27,27 +28,29 @@ function App() {
 
   return (
     <GoogleOAuthProvider clientId={googleClientId || ''}>
-      <Router>
-        <div className="App">
-          <Routes>
-            <Route path="/" element={<LandingPage onLogin={handleLogin} />} />
-            <Route path="/kiosk-login" element={<LoginScreen onLogin={handleLogin} />} />
-            <Route
-              path="/customer"
-              element={user ? <CustomerKiosk user={user} onLogout={handleLogout} /> : <Navigate to="/kiosk-login" />}
-            />
-            <Route
-              path="/employee"
-              element={user && user.type === 'employee' ? <EmployeeView user={user} onLogout={handleLogout} /> : <Navigate to="/" />}
-            />
-            <Route
-              path="/manager"
-              element={user && user.type === 'manager' ? <ManagerView user={user} onLogout={handleLogout} /> : <Navigate to="/" />}
-            />
-            <Route path="*" element={<Navigate to="/" />} />
-          </Routes>
-        </div>
-      </Router>
+      <WeatherProvider>
+        <Router>
+          <div className="App">
+            <Routes>
+              <Route path="/" element={<LandingPage onLogin={handleLogin} />} />
+              <Route path="/kiosk-login" element={<LoginScreen onLogin={handleLogin} />} />
+              <Route
+                path="/customer"
+                element={user ? <CustomerKiosk user={user} onLogout={handleLogout} /> : <Navigate to="/kiosk-login" />}
+              />
+              <Route
+                path="/employee"
+                element={user && user.type === 'employee' ? <EmployeeView user={user} onLogout={handleLogout} /> : <Navigate to="/" />}
+              />
+              <Route
+                path="/manager"
+                element={user && user.type === 'manager' ? <ManagerView user={user} onLogout={handleLogout} /> : <Navigate to="/" />}
+              />
+              <Route path="*" element={<Navigate to="/" />} />
+            </Routes>
+          </div>
+        </Router>
+      </WeatherProvider>
     </GoogleOAuthProvider>
   );
 }
