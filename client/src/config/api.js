@@ -26,11 +26,11 @@ export const API_ENDPOINTS = {
   // Menu
   MENU_GROUPED: `${API_URL}/api/menu/grouped`,
   MENU_ITEMS: `${API_URL}/api/menu/items`,
-  
+
   // Customizations
   CUSTOMIZATIONS_ADDONS: `${API_URL}/api/customizations/addons`,
   CUSTOMIZATIONS_GROUPED: `${API_URL}/api/customizations/grouped`,
-  
+
   // Orders
   ORDERS: `${API_URL}/api/orders`,
   ORDERS_CUSTOMER_HISTORY: (customerId) => `${API_URL}/api/orders/customer/${customerId}`,
@@ -39,6 +39,7 @@ export const API_ENDPOINTS = {
 
   // Auth
   AUTH_GOOGLE: `${API_URL}/api/auth/google`,
+  AUTH_EMAIL: `${API_URL}/api/auth/email`,
   AUTH_EMPLOYEE: `${API_URL}/api/auth/employee`,
   AUTH_MANAGER: `${API_URL}/api/auth/manager`,
 
@@ -55,6 +56,25 @@ export const API_ENDPOINTS = {
   INVENTORY_TRANSACTIONS: `${API_URL}/api/inventory/transactions/history`,
   INVENTORY_RESTOCK: (id) => `${API_URL}/api/inventory/restock/${id}`,
   INVENTORY_ADJUST: (id) => `${API_URL}/api/inventory/adjust/${id}`,
+
+  // Analytics
+  ANALYTICS_SALES: `${API_URL}/api/analytics/sales`,
+  ANALYTICS_EMPLOYEES: `${API_URL}/api/analytics/employees`,
+
+  // Reports
+  REPORTS: `${API_URL}/api/reports`,
+  REPORTS_X: `${API_URL}/api/reports/x`,
+
+  // Employees
+  EMPLOYEES: `${API_URL}/api/employees`,
+  EMPLOYEE: (id) => `${API_URL}/api/employees/${id}`,
+
+  // Menu
+  MENU: `${API_URL}/api/menu`,
+  MENU_ITEM: (id) => `${API_URL}/api/menu/${id}`,
+  MENU_DEPENDENCIES: (id) => `${API_URL}/api/menu/${id}/dependencies`,
+  MENU_DEPENDENCY: (menuId, invId) => `${API_URL}/api/menu/${menuId}/dependencies/${invId}`,
+  MENU_DEPENDENCIES_BATCH: `${API_URL}/api/menu/dependencies/batch`,
 };
 
 export default API_URL;

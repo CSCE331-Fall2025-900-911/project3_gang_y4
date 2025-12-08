@@ -1,0 +1,268 @@
+/* Weather Animations */
+.weather-bg-container {
+    background: linear-gradient(to bottom, #202020, #111119);
+    transition: background 1s ease;
+}
+
+/* Day/Night Gradients */
+.weather-bg-container.day-clear {
+    background: linear-gradient(to bottom, #4facfe 0%, #00f2fe 100%);
+}
+
+.weather-bg-container.day-cloudy {
+    background: linear-gradient(to bottom, #757F9A, #D7DDE8);
+}
+
+.weather-bg-container.night-clear {
+    background: linear-gradient(to bottom, #0f2027, #203a43, #2c5364);
+}
+
+.weather-bg-container.night-cloudy {
+    background: linear-gradient(to bottom, #232526, #414345);
+}
+
+.weather-bg-container.rainy {
+    background: linear-gradient(to bottom, #202020, #111119);
+}
+
+/* --- RAIN ANIMATION (From User) --- */
+.rain {
+    position: absolute;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    z-index: 2;
+    pointer-events: none;
+}
+
+.drop {
+    position: absolute;
+    bottom: 100%;
+    /* Start above screen */
+    width: 2px;
+    /* Thinner for realism */
+    height: 80px;
+    pointer-events: none;
+    animation: drop 0.5s linear infinite;
+}
+
+@keyframes drop {
+    0% {
+        transform: translateY(0vh);
+    }
+
+    75% {
+        transform: translateY(100vh);
+    }
+
+    100% {
+        transform: translateY(100vh);
+    }
+}
+
+.stem {
+    width: 1px;
+    height: 60%;
+    margin-left: 0;
+    background: linear-gradient(to bottom, rgba(255, 255, 255, 0), rgba(255, 255, 255, 0.25));
+    animation: stem 0.5s linear infinite;
+}
+
+@keyframes stem {
+    0% {
+        opacity: 1;
+    }
+
+    65% {
+        opacity: 1;
+    }
+
+    75% {
+        opacity: 0;
+    }
+
+    100% {
+        opacity: 0;
+    }
+}
+
+.splat {
+    width: 15px;
+    height: 10px;
+    border-top: 2px dotted rgba(255, 255, 255, 0.5);
+    border-radius: 50%;
+    opacity: 1;
+    transform: scale(0);
+    animation: splat 0.5s linear infinite;
+    display: block;
+    /* Always block since we generate efficiently */
+}
+
+@keyframes splat {
+    0% {
+        opacity: 1;
+        transform: scale(0);
+    }
+
+    80% {
+        opacity: 1;
+        transform: scale(0);
+    }
+
+    90% {
+        opacity: 0.5;
+        transform: scale(1);
+    }
+
+    100% {
+        opacity: 0;
+        transform: scale(1.5);
+    }
+}
+
+/* --- SNOW ANIMATION --- */
+.snow {
+    position: absolute;
+    left: 0;
+    top: 0;
+    width: 100%;
+    height: 100%;
+    z-index: 2;
+    pointer-events: none;
+}
+
+.flake {
+    position: absolute;
+    top: -10px;
+    background: white;
+    border-radius: 50%;
+    opacity: 0.8;
+    animation: snow 10s linear infinite;
+}
+
+@keyframes snow {
+    0% {
+        transform: translateY(0) translateX(0);
+    }
+
+    25% {
+        transform: translateY(25vh) translateX(15px);
+    }
+
+    50% {
+        transform: translateY(50vh) translateX(-15px);
+    }
+
+    75% {
+        transform: translateY(75vh) translateX(15px);
+    }
+
+    100% {
+        transform: translateY(100vh) translateX(0);
+    }
+}
+
+/* --- STARS ANIMATION --- */
+.stars {
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    z-index: 1;
+}
+
+.star {
+    position: absolute;
+    background: white;
+    border-radius: 50%;
+    animation: twinkle 2s infinite ease-in-out;
+}
+
+@keyframes twinkle {
+
+    0%,
+    100% {
+        opacity: 0.2;
+        transform: scale(0.8);
+    }
+
+    50% {
+        opacity: 1;
+        transform: scale(1.2);
+    }
+}
+
+/* --- CLOUDS ANIMATION --- */
+.clouds {
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    z-index: 1;
+    overflow: hidden;
+}
+
+.cloud {
+    position: absolute;
+    background: rgba(255, 255, 255, 0.6);
+    border-radius: 50px;
+    animation: drift linear infinite;
+}
+
+.cloud::after,
+.cloud::before {
+    content: '';
+    position: absolute;
+    background: inherit;
+    border-radius: 50%;
+}
+
+@keyframes drift {
+    from {
+        transform: translateX(-200px);
+    }
+
+    to {
+        transform: translateX(100vw);
+    }
+}
+
+/* --- STORM FLASH --- */
+.flash {
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    background: rgba(255, 255, 255, 0.3);
+    z-index: 3;
+    opacity: 0;
+    animation: lightning 5s infinite;
+    pointer-events: none;
+}
+
+@keyframes lightning {
+
+    0%,
+    90% {
+        opacity: 0;
+    }
+
+    92% {
+        opacity: 0.6;
+    }
+
+    94% {
+        opacity: 0;
+    }
+
+    96% {
+        opacity: 0.3;
+    }
+
+    100% {
+        opacity: 0;
+    }
+}

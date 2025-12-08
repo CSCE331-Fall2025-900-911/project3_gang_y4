@@ -182,4 +182,83 @@ router.get('/x', async (req, res) => {
   }
 });
 
+
+// Z Report - End of day report (stored in DB)
+// GET status - check if report exists
+router.get('/z', async (req, res) => {
+  try {
+    const { date } = req.query;
+    if (!date) return res.status(400).json({ error: 'date is required' });
+
+    const result = await query(
+      'SELECT * FROM z_reports WHERE report_date = $1',
+      [date]
+    );
+
+    res.json({
+      exists: result.rows.length > 0,
+      report: result.rows[0] || null
+    });
+  } catch (error) {
+    console.error('Error checking Z Report:', error);
+    res.status(500).json({ error: 'Failed to check Z Report' });
+  }
+});
+
+// POST generate - create new report
+router.post('/z', async (req, res) => {
+  try {
+    const { date } = req.body;
+    if (!date) return res.status(400).json({ error: 'date is required' });
+
+    // 1. Check if already exists
+    const existing = await query(
+      'SELECT * FROM z_reports WHERE report_date = $1',
+      [date]
+    );
+
+    if (existing.rows.length > 0) {
+      return res.status(409).json({ error: 'Z Report already exists for this date' });
+    }
+
+    // 2. Generate data using the DB function
+    const dataResult = await query(
+      "SELECT get_z_report($1) as report",
+      [date]
+    );
+
+    // get_z_report returns a JSON object directly
+    const reportData = dataResult.rows[0].report;
+
+    // 3. Store in DB
+    const insertResult = await query(
+      'INSERT INTO z_reports (report_date, data) VALUES ($1, $2) RETURNING *',
+      [date, reportData]
+    );
+
+    res.json(insertResult.rows[0]);
+  } catch (error) {
+    console.error('Error generating Z Report:', error);
+    res.status(500).json({ error: 'Failed to generate Z Report' });
+  }
+});
+
+// DELETE clear - remove report to allow regeneration
+router.delete('/z', async (req, res) => {
+  try {
+    const { date } = req.query; // Use query param for consistency/safety
+    if (!date) return res.status(400).json({ error: 'date is required' });
+
+    await query(
+      'DELETE FROM z_reports WHERE report_date = $1',
+      [date]
+    );
+
+    res.json({ message: 'Z Report cleared' });
+  } catch (error) {
+    console.error('Error clearing Z Report:', error);
+    res.status(500).json({ error: 'Failed to clear Z Report' });
+  }
+});
+
 export default router;

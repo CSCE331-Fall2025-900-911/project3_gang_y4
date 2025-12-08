@@ -1,4 +1,5 @@
 import React, { useState, useEffect } from 'react';
+import { createPortal } from 'react-dom';
 import { BarChart, Bar, LineChart, Line, PieChart, Pie, Cell, XAxis, YAxis, CartesianGrid, Tooltip, Legend, ResponsiveContainer } from 'recharts';
 import CheckoutInterface from './CheckoutInterface';
 import { API_ENDPOINTS } from '../config/api';
@@ -61,6 +62,12 @@ function ManagerView({ user, onLogout }) {
         >
           X Report
         </button>
+        <button
+          className={`tab-btn ${activeTab === 'zreport' ? 'active' : ''}`}
+          onClick={() => setActiveTab('zreport')}
+        >
+          Z Report
+        </button>
       </nav>
 
       <main className="manager-content">
@@ -71,6 +78,7 @@ function ManagerView({ user, onLogout }) {
         {activeTab === 'orders' && <OrdersTab />}
         {activeTab === 'trends' && <TrendsTab />}
         {activeTab === 'xreport' && <XReportTab />}
+        {activeTab === 'zreport' && <ZReportTab />}
       </main>
     </div>
   );
@@ -92,7 +100,7 @@ function InventoryTab() {
   const fetchInventory = async () => {
     try {
       console.log('🔍 Fetching inventory from API...');
-        const res = await fetch(`${import.meta.env.VITE_API_URL || ''}/api/inventory`);
+      const res = await fetch(API_ENDPOINTS.INVENTORY);
       const data = await res.json();
       console.log('🔍 Inventory data received:', data);
       setInventory(data);
@@ -108,13 +116,13 @@ function InventoryTab() {
     e.preventDefault();
     try {
       if (editing) {
-            await fetch(`${import.meta.env.VITE_API_URL || ''}/api/inventory/${editing.ingredientid}`, {
+        await fetch(API_ENDPOINTS.INVENTORY_ITEM(editing.ingredientid), {
           method: 'PUT',
           headers: { 'Content-Type': 'application/json' },
           body: JSON.stringify(formData)
         });
       } else {
-            await fetch(`${import.meta.env.VITE_API_URL || ''}/api/inventory`, {
+        await fetch(API_ENDPOINTS.INVENTORY, {
           method: 'POST',
           headers: { 'Content-Type': 'application/json' },
           body: JSON.stringify(formData)
@@ -136,7 +144,7 @@ function InventoryTab() {
   const handleDelete = async (id) => {
     if (!confirm('Delete this item?')) return;
     try {
-      await fetch(`${import.meta.env.VITE_API_URL || ''}/api/inventory/${id}`, { method: 'DELETE' });
+      await fetch(API_ENDPOINTS.INVENTORY_ITEM(id), { method: 'DELETE' });
       fetchInventory();
     } catch (err) {
       console.error('Error deleting inventory:', err);
@@ -216,7 +224,7 @@ function EmployeesTab() {
 
   const fetchEmployees = async () => {
     try {
-        const res = await fetch(`${import.meta.env.VITE_API_URL || ''}/api/employees`);
+      const res = await fetch(API_ENDPOINTS.EMPLOYEES);
       const data = await res.json();
       setEmployees(data);
     } catch (err) {
@@ -230,13 +238,13 @@ function EmployeesTab() {
     e.preventDefault();
     try {
       if (editing) {
-        await fetch(`/api/employees/${editing.employeeid}`, {
+        await fetch(API_ENDPOINTS.EMPLOYEE(editing.employeeid), {
           method: 'PUT',
           headers: { 'Content-Type': 'application/json' },
           body: JSON.stringify(formData)
         });
       } else {
-        await fetch('/api/employees', {
+        await fetch(API_ENDPOINTS.EMPLOYEES, {
           method: 'POST',
           headers: { 'Content-Type': 'application/json' },
           body: JSON.stringify(formData)
@@ -258,7 +266,7 @@ function EmployeesTab() {
   const handleDelete = async (id) => {
     if (!confirm('Delete this employee?')) return;
     try {
-      await fetch(`/api/employees/${id}`, { method: 'DELETE' });
+      await fetch(API_ENDPOINTS.EMPLOYEE(id), { method: 'DELETE' });
       fetchEmployees();
     } catch (err) {
       console.error('Error deleting employee:', err);
@@ -328,7 +336,7 @@ function DependencyEditorModal({ menuItem, dependencies, onClose, onSave }) {
 
   const fetchAvailableIngredients = async () => {
     try {
-      const res = await fetch('/api/inventory');
+      const res = await fetch(API_ENDPOINTS.INVENTORY);
       const data = await res.json();
       setAvailableIngredients(data);
     } catch (err) {
@@ -348,18 +356,15 @@ function DependencyEditorModal({ menuItem, dependencies, onClose, onSave }) {
       return;
     }
 
-    // Check if dependency already exists
+    // Check if dependency already exists (for UI feedback only, backend handles upsert)
     const exists = currentDependencies.some(dep => dep.inventory_id === parseInt(selectedIngredient));
-    if (exists) {
-      setMessage({ type: 'error', text: 'This ingredient is already added. Remove it first to change the quantity.' });
-      return;
-    }
+    // Removed the blocking check to allow updates
 
     setLoading(true);
     setMessage({ type: '', text: '' });
 
     try {
-      const res = await fetch(`/api/menu/${menuItem.menuid}/dependencies`, {
+      const res = await fetch(API_ENDPOINTS.MENU_DEPENDENCIES(menuItem.menuid), {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
@@ -374,13 +379,13 @@ function DependencyEditorModal({ menuItem, dependencies, onClose, onSave }) {
       }
 
       // Refresh dependencies
-      const depsRes = await fetch(`/api/menu/${menuItem.menuid}/dependencies`);
+      const depsRes = await fetch(API_ENDPOINTS.MENU_DEPENDENCIES(menuItem.menuid));
       const depsData = await depsRes.json();
       setCurrentDependencies(depsData.dependencies);
 
       setSelectedIngredient('');
       setQuantity('');
-      setMessage({ type: 'success', text: 'Ingredient added successfully!' });
+      setMessage({ type: 'success', text: exists ? 'Ingredient updated successfully!' : 'Ingredient added successfully!' });
     } catch (err) {
       console.error('Error adding dependency:', err);
       setMessage({ type: 'error', text: err.message });
@@ -396,7 +401,7 @@ function DependencyEditorModal({ menuItem, dependencies, onClose, onSave }) {
     setMessage({ type: '', text: '' });
 
     try {
-      const res = await fetch(`/api/menu/${menuItem.menuid}/dependencies/${inventoryId}`, {
+      const res = await fetch(API_ENDPOINTS.MENU_DEPENDENCY(menuItem.menuid, inventoryId), {
         method: 'DELETE'
       });
 
@@ -406,7 +411,7 @@ function DependencyEditorModal({ menuItem, dependencies, onClose, onSave }) {
       }
 
       // Refresh dependencies
-      const depsRes = await fetch(`/api/menu/${menuItem.menuid}/dependencies`);
+      const depsRes = await fetch(API_ENDPOINTS.MENU_DEPENDENCIES(menuItem.menuid));
       const depsData = await depsRes.json();
       setCurrentDependencies(depsData.dependencies);
 
@@ -424,7 +429,7 @@ function DependencyEditorModal({ menuItem, dependencies, onClose, onSave }) {
     return ingredient ? ingredient.item_name : 'Unknown';
   };
 
-  return (
+  return createPortal(
     <div className="modal-overlay" onClick={onClose}>
       <div className="modal-content dependency-editor-modal" onClick={(e) => e.stopPropagation()}>
         <div className="modal-header">
@@ -450,13 +455,25 @@ function DependencyEditorModal({ menuItem, dependencies, onClose, onSave }) {
                     <span className="dependency-info">
                       <strong>{dep.name}</strong> - {dep.quantity_needed}g
                     </span>
-                    <button
-                      className="btn-remove"
-                      onClick={() => handleRemoveDependency(dep.inventory_id)}
-                      disabled={loading}
-                    >
-                      Remove
-                    </button>
+                    <div className="dependency-actions">
+                      <button
+                        className="btn-edit-dep"
+                        onClick={() => {
+                          setSelectedIngredient(dep.inventory_id);
+                          setQuantity(dep.quantity_needed);
+                        }}
+                        disabled={loading}
+                      >
+                        Edit
+                      </button>
+                      <button
+                        className="btn-remove"
+                        onClick={() => handleRemoveDependency(dep.inventory_id)}
+                        disabled={loading}
+                      >
+                        Remove
+                      </button>
+                    </div>
                   </li>
                 ))}
               </ul>
@@ -464,7 +481,7 @@ function DependencyEditorModal({ menuItem, dependencies, onClose, onSave }) {
           </div>
 
           <div className="add-dependency">
-            <h3>Add Ingredient:</h3>
+            <h3>{selectedIngredient && currentDependencies.some(d => d.inventory_id == selectedIngredient) ? 'Update Ingredient:' : 'Add Ingredient:'}</h3>
             <div className="add-dependency-form">
               <select
                 value={selectedIngredient}
@@ -492,18 +509,34 @@ function DependencyEditorModal({ menuItem, dependencies, onClose, onSave }) {
                 onClick={handleAddDependency}
                 disabled={loading}
               >
-                {loading ? 'Adding...' : 'Add'}
+                {loading ? 'Saving...' : (selectedIngredient && currentDependencies.some(d => d.inventory_id == selectedIngredient) ? 'Update' : 'Add')}
               </button>
             </div>
           </div>
         </div>
 
         <div className="modal-footer">
-          <button className="btn-cancel" onClick={onClose}>Close</button>
-          <button className="btn-save" onClick={onSave}>Save & Refresh</button>
+          <button className="btn-save" onClick={async () => {
+            // Auto-save if there's pending input
+            if (selectedIngredient && quantity) {
+              if (parseFloat(quantity) > 0) {
+                // We can't easily call handleAddDependency here because it uses state that might not be fresh or we want to await it.
+                // Actually, we can just call it. But we need to know if it succeeded.
+                // Let's just try to save.
+                try {
+                  await handleAddDependency();
+                } catch (e) {
+                  // If error, don't close?
+                  return;
+                }
+              }
+            }
+            onSave();
+          }}>Done</button>
         </div>
       </div>
-    </div>
+    </div>,
+    document.body
   );
 }
 
@@ -525,14 +558,14 @@ function MenuTab() {
     const loadMenuData = async () => {
       try {
         setLoading(true);
-        const res = await fetch(`${import.meta.env.VITE_API_URL || ''}/api/menu`);
+        const res = await fetch(API_ENDPOINTS.MENU);
         const data = await res.json();
         if (!isMounted) return;
         setMenu(data);
 
         // Try batch dependencies
         try {
-          const depsRes = await fetch(`${import.meta.env.VITE_API_URL || ''}/api/menu/dependencies/batch`);
+          const depsRes = await fetch(API_ENDPOINTS.MENU_DEPENDENCIES_BATCH);
           const allDeps = await depsRes.json();
           const depsMap = {};
           data.forEach(item => {
@@ -568,13 +601,13 @@ function MenuTab() {
     e.preventDefault();
     try {
       if (editing) {
-        await fetch(`${import.meta.env.VITE_API_URL || ''}/api/menu/${editing.menuid}`, {
+        await fetch(API_ENDPOINTS.MENU_ITEM(editing.menuid), {
           method: 'PUT',
           headers: { 'Content-Type': 'application/json' },
           body: JSON.stringify(formData)
         });
       } else {
-        await fetch(`${import.meta.env.VITE_API_URL || ''}/api/menu`, {
+        await fetch(API_ENDPOINTS.MENU, {
           method: 'POST',
           headers: { 'Content-Type': 'application/json' },
           body: JSON.stringify(formData)
@@ -596,7 +629,7 @@ function MenuTab() {
   const handleDelete = async (id) => {
     if (!confirm('Delete this menu item?')) return;
     try {
-      await fetch(`${import.meta.env.VITE_API_URL || ''}/api/menu/${id}`, { method: 'DELETE' });
+      await fetch(API_ENDPOINTS.MENU_ITEM(id), { method: 'DELETE' });
       fetchMenu();
     } catch (err) {
       console.error('Error deleting menu item:', err);
@@ -656,7 +689,7 @@ function MenuTab() {
               </td>
               <td>
                 <button onClick={() => handleEdit(item)} className="btn-edit">Edit</button>
-                <button onClick={() => setEditingDependencies(item)} className="btn-dependencies">Dependencies</button>
+                <button onClick={() => setEditingDependencies(item)} className="btn-dependencies">Manage Ingredients</button>
                 <button onClick={() => handleDelete(item.menuid)} className="btn-delete">Delete</button>
               </td>
             </tr>
@@ -1035,7 +1068,7 @@ function TrendsTab() {
 
   const fetchEmployees = async () => {
     try {
-      const res = await fetch('/api/analytics/employees');
+      const res = await fetch(API_ENDPOINTS.ANALYTICS_EMPLOYEES);
       if (!res.ok) throw new Error('Failed to fetch employees');
       const data = await res.json();
       setEmployees(data);
@@ -1068,7 +1101,7 @@ function TrendsTab() {
         params.append('employeeId', selectedEmployee);
       }
 
-      const res = await fetch(`/api/analytics/sales?${params}`);
+      const res = await fetch(`${API_ENDPOINTS.ANALYTICS_SALES}?${params}`);
       if (!res.ok) {
         throw new Error('Failed to fetch analytics data');
       }
@@ -1418,7 +1451,7 @@ function XReportTab() {
     console.log(`📊 Generating X Report for ${reportDate} ${startTime} to ${endTime}`);
 
     try {
-      const res = await fetch(`/api/reports/x?date=${reportDate}&startTime=${startTime}&endTime=${endTime}`);
+      const res = await fetch(`${API_ENDPOINTS.REPORTS_X}?date=${reportDate}&startTime=${startTime}&endTime=${endTime}`);
 
       if (!res.ok) {
         const errorData = await res.json();
@@ -1689,3 +1722,183 @@ function XReportTab() {
 }
 
 export default ManagerView;
+
+// Z Report Tab
+function ZReportTab() {
+    const [date, setDate] = useState(new Date().toISOString().split('T')[0]);
+    const [report, setReport] = useState(null); // The full report object from DB
+    const [exists, setExists] = useState(false); // Whether a report exists for this date
+    const [loading, setLoading] = useState(false);
+    const [error, setError] = useState(null);
+
+    useEffect(() => {
+        checkStatus();
+    }, [date]);
+
+    const checkStatus = async () => {
+        try {
+            setLoading(true);
+            setError(null);
+            const res = await fetch(`${API_ENDPOINTS.REPORTS}/z?date=${date}`);
+            if (!res.ok) throw new Error('Failed to check status');
+            const data = await res.json();
+            setExists(data.exists);
+            setReport(data.report ? data.report.data : null); // data.report.data contains the JSON blob
+        } catch (err) {
+            console.error('Error checking Z Report:', err);
+            setError(err.message);
+        } finally {
+            setLoading(false);
+        }
+    };
+
+    const handleGenerate = async () => {
+        if (!confirm(`Generate Z Report for ${date}? This will close the day's sales.`)) return;
+
+        try {
+            setLoading(true);
+            setError(null);
+            const res = await fetch(`${API_ENDPOINTS.REPORTS}/z`, {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ date })
+            });
+
+            if (!res.ok) {
+                const errData = await res.json();
+                throw new Error(errData.error || 'Failed to generate report');
+            }
+
+            await checkStatus(); // Refresh to show the new report
+        } catch (err) {
+            console.error('Error generating report:', err);
+            setError(err.message);
+        } finally {
+            setLoading(false);
+        }
+    };
+
+    const handleClear = async () => {
+        if (!confirm(`Warning: Clearing the Z Report for ${date} will allow it to be regenerated. Continue?`)) return;
+
+        try {
+            setLoading(true);
+            setError(null);
+            const res = await fetch(`${API_ENDPOINTS.REPORTS}/z?date=${date}`, {
+                method: 'DELETE'
+            });
+
+            if (!res.ok) throw new Error('Failed to clear report');
+
+            await checkStatus(); // Refresh to reset state
+        } catch (err) {
+            console.error('Error clearing report:', err);
+            setError(err.message);
+        } finally {
+            setLoading(false);
+        }
+    };
+
+    return (
+        <div className="tab-content">
+            <h2>Z Report (End of Day)</h2>
+
+            <div className="report-controls">
+                <div className="control-group">
+                    <label>Date:</label>
+                    <input
+                        type="date"
+                        value={date}
+                        onChange={(e) => setDate(e.target.value)}
+                        max={new Date().toISOString().split('T')[0]}
+                    />
+                </div>
+
+                <div className="action-buttons">
+                    {!exists ? (
+                        <button
+                            className="btn-generate"
+                            onClick={handleGenerate}
+                            disabled={loading}
+                        >
+                            {loading ? 'Generating...' : 'Generate Z Report'}
+                        </button>
+                    ) : (
+                        <button
+                            className="btn-delete"
+                            onClick={handleClear}
+                            disabled={loading}
+                        >
+                            {loading ? 'Clearing...' : 'Clear Report'}
+                        </button>
+                    )}
+                </div>
+            </div>
+
+            {error && <div className="error-message">{error}</div>}
+
+            {exists && report && (
+                <div className="report-results">
+                    <div className="report-header">
+                        <h3>Z Report for {date}</h3>
+                        <span className="timestamp">Generated: {new Date().toLocaleString()}</span>
+                    </div>
+
+                    <div className="metrics-grid">
+                        <div className="metric-card">
+                            <h4>Total Orders</h4>
+                            <div className="value">{report.summary.transaction_count}</div>
+                        </div>
+                        <div className="metric-card">
+                            <h4>Gross Sales</h4>
+                            <div className="value">${parseFloat(report.summary.net_sales).toFixed(2)}</div>
+                        </div>
+                        <div className="metric-card">
+                            <h4>Tax</h4>
+                            <div className="value">${parseFloat(report.summary.total_tax).toFixed(2)}</div>
+                        </div>
+                        <div className="metric-card highlight">
+                            <h4>Net Sales</h4>
+                            <div className="value">${parseFloat(report.summary.total_sales).toFixed(2)}</div>
+                        </div>
+                    </div>
+
+                    <div className="charts-container">
+                        <div className="chart-wrapper">
+                            <h4>Payment Methods</h4>
+                            {report.payment_breakdown && report.payment_breakdown.length > 0 ? (
+                                <ResponsiveContainer width="100%" height={300}>
+                                    <PieChart>
+                                        <Pie
+                                            data={report.payment_breakdown}
+                                            dataKey="amount"
+                                            nameKey="payment_method"
+                                            cx="50%"
+                                            cy="50%"
+                                            outerRadius={80}
+                                            fill="#8884d8"
+                                            label={(entry) => `${entry.payment_method}: $${parseFloat(entry.amount)}`}
+                                        >
+                                            {report.payment_breakdown.map((entry, index) => (
+                                                <Cell key={`cell-${index}`} fill={['#0088FE', '#00C49F', '#FFBB28', '#FF8042'][index % 4]} />
+                                            ))}
+                                        </Pie>
+                                        <Tooltip formatter={(value) => `$${parseFloat(value).toFixed(2)}`} />
+                                        <Legend />
+                                    </PieChart>
+                                </ResponsiveContainer>
+                            ) : <p>No payment data available.</p>}
+                        </div>
+                    </div>
+                </div>
+            )}
+
+            {!exists && !loading && (
+                <div className="empty-state">
+                    <p>No Z Report generated for this date.</p>
+                    <p>Click "Generate" to close the day and create the report.</p>
+                </div>
+            )}
+        </div>
+    );
+}

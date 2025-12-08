@@ -19,19 +19,29 @@ package-lock.json
 # Environment variables
 .env
 .env.local
+.env.development
 .env.production
+.env.test
 .env.*
 # Specific env files in subdirectories
 client/.env
 client/.env.local
+client/.env.development
+client/.env.production
 server/.env
 server/.env.local
+server/.env.development
+server/.env.production
+# Keep .env.example files (these are safe to commit)
+!.env.example
+!**/.env.example
 
 # IDE
 .vscode/
 .idea/
 *.swp
 *.swo
+.claude/
 
 # Build outputs
 dist/
