@@ -1,6 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import ReactDOM from 'react-dom';
 import CustomizationModal from './CustomizationModal';
+import OrderConfirmationModal from './OrderConfirmationModal';
 import { API_ENDPOINTS } from '../config/api';
 import '../styles/EmployeeView.css';
 
@@ -28,6 +29,8 @@ function CheckoutInterface({ user }) {
 
   // Order notes state
   const [orderNotes, setOrderNotes] = useState('');
+  const [showConfirmation, setShowConfirmation] = useState(false);
+  const [confirmationData, setConfirmationData] = useState(null);
 
   // Fetch menu data from API on component mount
   useEffect(() => {
@@ -260,6 +263,17 @@ function CheckoutInterface({ user }) {
         throw new Error(errorData.error || 'Failed to create order');
       }
 
+      // Parse response body for order id and other info (be robust if no JSON returned)
+      let result = {};
+      try {
+        result = await response.json();
+      } catch (parseErr) {
+        // If server returned no JSON (204) or invalid JSON, fallback to headers or empty
+        console.warn('Order response JSON parse failed, continuing with fallback', parseErr);
+        const orderIdHeader = response.headers.get('x-order-id');
+        if (orderIdHeader) result.order_id = orderIdHeader;
+      }
+
       // If not a guest, add rewards points (total cents spent)
       if (customerId !== 0) {
         const rewardsPoints = Math.round(total * 100); // Convert to cents
@@ -281,11 +295,18 @@ function CheckoutInterface({ user }) {
         }
       }
 
-      alert('Order completed successfully!' + (customerId !== 0 ? ' Rewards points added.' : ''));
+      // Clear cart and show confirmation modal instead of alert
       setCart([]);
       setOrderNotes('');
       setShowCustomerLookup(false);
       setShowPaymentModal(false);
+
+      setConfirmationData({
+        orderId: result?.order_id || "—",
+        total: total,
+        rewardsInfo: customerId !== 0 ? { earnedPoints: Math.round(total * 100) } : null
+      });
+      setShowConfirmation(true);
     } catch (err) {
       console.error('Error completing order:', err);
       alert('Failed to complete order. Please try again.');
@@ -458,7 +479,7 @@ function CheckoutInterface({ user }) {
         </div>
       </div>
 
-      {/* Customization Modal */}
+        {/* Customization Modal */}
       {showCustomizationModal && selectedItem && (
         <CustomizationModal
           item={selectedItem}
@@ -470,6 +491,18 @@ function CheckoutInterface({ user }) {
           onConfirm={handleCustomizationConfirm}
           existingCustomizations={editingCartIndex !== null ? cart[editingCartIndex].customizations : null}
         />
+      )}
+
+      {/* Order Confirmation Modal for employee/manager */}
+      {showConfirmation && confirmationData && ReactDOM.createPortal(
+        <OrderConfirmationModal
+          orderId={confirmationData.orderId}
+          total={confirmationData.total}
+          rewardsInfo={confirmationData.rewardsInfo}
+          showThanks={false}
+          onClose={() => setShowConfirmation(false)}
+        />,
+        document.body
       )}
 
       {/* Customer Lookup Modal */}

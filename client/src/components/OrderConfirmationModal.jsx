@@ -1,7 +1,7 @@
 import React from 'react';
 import '../styles/OrderConfirmationModal.css';
 
-function OrderConfirmationModal({ orderId, total, rewardsInfo, onClose }) {
+function OrderConfirmationModal({ orderId, total, rewardsInfo, onClose, showThanks = true }) {
   return (
     <div className="modal-overlay" onClick={onClose}>
       <div className="confirmation-modal" onClick={(e) => e.stopPropagation()}>
@@ -37,11 +37,13 @@ function OrderConfirmationModal({ orderId, total, rewardsInfo, onClose }) {
           )}
         </div>
 
-        {/* Message */}
-        <div className="confirmation-message">
-          <p>Thank you for your order!</p>
-          <p className="sub-message">Your order will be ready shortly.</p>
-        </div>
+        {/* Message (can be hidden for staff view) */}
+        {showThanks && (
+          <div className="confirmation-message">
+            <p>Thank you for your order!</p>
+            <p className="sub-message">Your order will be ready shortly.</p>
+          </div>
+        )}
 
         {/* Close button */}
         <button className="btn-close-modal" onClick={onClose}>
