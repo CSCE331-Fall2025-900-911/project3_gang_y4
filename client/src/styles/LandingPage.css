@@ -68,6 +68,12 @@
   animation: slideUp var(--duration-slower) var(--ease-out);
 }
 
+/* Keep the hero container visually transparent so the animated background shows through */
+.landing__hero {
+  background: transparent;
+  padding: 0;
+}
+
 .landing__header {
   margin-bottom: var(--space-12);
 }
@@ -378,6 +384,42 @@
   .action-card__title {
     font-size: var(--text-xl);
   }
+}
+
+/* Low-contrast support when body has the class */
+.low-contrast .landing,
+.landing.low-contrast {
+  filter: grayscale(60%) contrast(92%);
+  color: #6b7280;
+}
+
+.low-contrast .landing .landing__title,
+.landing.low-contrast .landing__title {
+  color: #4b5563;
+}
+
+/* Ensure toggle button is visible on landing pages */
+.kiosk__low-contrast-toggle {
+  position: fixed;
+  left: 16px;
+  bottom: 16px;
+  z-index: 11000;
+  /* visibly white button so it stands out on dark landing background */
+  background: rgba(255, 255, 255, 0.96);
+  color: #07122a;
+  border: 1px solid rgba(2,6,23,0.06);
+  padding: 8px 12px;
+  border-radius: 10px;
+  font-size: 13px;
+  cursor: pointer;
+  backdrop-filter: blur(6px);
+  box-shadow: 0 8px 30px rgba(2,6,23,0.08);
+  transition: transform 0.18s ease, box-shadow 0.18s ease;
+}
+
+.kiosk__low-contrast-toggle:hover {
+  transform: translateY(-3px);
+  box-shadow: 0 12px 36px rgba(2,6,23,0.12);
 }
 
 /* ========== TOUCH OPTIMIZATIONS ========== */

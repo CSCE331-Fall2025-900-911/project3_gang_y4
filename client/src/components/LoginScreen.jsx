@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { useGoogleLogin } from '@react-oauth/google';
 import { API_ENDPOINTS } from '../config/api';
@@ -8,6 +8,9 @@ import '../styles/LoginScreen.css';
 
 function LoginScreen({ onLogin }) {
   const navigate = useNavigate();
+  const [lowContrast, setLowContrast] = useState(() => {
+    try { return JSON.parse(localStorage.getItem('kiosk_low_contrast')) || false; } catch (e) { return false; }
+  });
   const [showEmailLogin, setShowEmailLogin] = useState(false);
   const [emailCredentials, setEmailCredentials] = useState({ email: '', password: '' });
   const [googleLoading, setGoogleLoading] = useState(false);
@@ -151,6 +154,14 @@ function LoginScreen({ onLogin }) {
     onLogin({ type: 'guest', name: 'Guest' });
     navigate('/customer');
   };
+
+  // Keep body-level low-contrast class in sync for cross-page styling
+  useEffect(() => {
+    try {
+      const host = document.body || document.documentElement;
+      if (lowContrast) host.classList.add('low-contrast'); else host.classList.remove('low-contrast');
+    } catch (e) {}
+  }, [lowContrast]);
 
   // Email Login Form
   if (showEmailLogin) {
@@ -319,6 +330,20 @@ function LoginScreen({ onLogin }) {
               }}
             >
               🎨 Theme: {weatherLabel || 'Live'}
+            </button>
+            
+            {/* Low contrast toggle - bottom left (shared key) */}
+            <button
+              className="kiosk__low-contrast-toggle"
+              onClick={() => {
+                const next = !lowContrast;
+                setLowContrast(next);
+                try { localStorage.setItem('kiosk_low_contrast', JSON.stringify(next)); } catch (e) {}
+              }}
+              aria-pressed={lowContrast}
+              title="Toggle low contrast view"
+            >
+              {lowContrast ? 'Normal contrast' : 'Low contrast'}
             </button>
           </footer>
         </section>

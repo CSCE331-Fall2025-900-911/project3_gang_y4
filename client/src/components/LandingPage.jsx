@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import StaffLogin from './StaffLogin';
 import '../styles/LandingPage.css';
@@ -27,6 +27,17 @@ const LandingPage = ({ onLogin }) => {
     const handleTranslate = async (targetLang) => {
         await setAppLanguage(targetLang, ['landing']);
     };
+
+    const [lowContrast, setLowContrast] = useState(() => {
+        try { return JSON.parse(localStorage.getItem('kiosk_low_contrast')) || false; } catch (e) { return false; }
+    });
+
+    useEffect(() => {
+        try {
+            const host = document.body || document.documentElement;
+            if (lowContrast) host.classList.add('low-contrast'); else host.classList.remove('low-contrast');
+        } catch (e) {}
+    }, [lowContrast]);
 
     return (
         <main className="landing">
@@ -126,6 +137,19 @@ const LandingPage = ({ onLogin }) => {
                     </dialog>
                 </div>
             )}
+                        {/* Low contrast toggle - bottom left (shared key) */}
+                        <button
+                            className="kiosk__low-contrast-toggle"
+                            onClick={() => {
+                                const next = !lowContrast;
+                                setLowContrast(next);
+                                try { localStorage.setItem('kiosk_low_contrast', JSON.stringify(next)); } catch (e) {}
+                            }}
+                            aria-pressed={lowContrast}
+                            title="Toggle low contrast view"
+                        >
+                            {lowContrast ? 'Normal contrast' : 'Low contrast'}
+                        </button>
         </main>
     );
 };

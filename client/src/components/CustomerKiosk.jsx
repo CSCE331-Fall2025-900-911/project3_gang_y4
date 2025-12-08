@@ -22,7 +22,25 @@ function CustomerKiosk({ user, onLogout }) {
   const [customerLoading, setCustomerLoading] = useState(true);
   const [showConfirmation, setShowConfirmation] = useState(false);
   const [confirmationData, setConfirmationData] = useState(null);
+  const [lowContrast, setLowContrast] = useState(() => {
+    try {
+      return JSON.parse(localStorage.getItem('kiosk_low_contrast')) || false;
+    } catch (e) {
+      return false;
+    }
+  });
   const customerFetchInProgress = useRef(false);
+
+  // Keep a body-level class in sync so other pages can respond too
+  useEffect(() => {
+    try {
+      const host = document.body || document.documentElement;
+      if (lowContrast) host.classList.add('low-contrast');
+      else host.classList.remove('low-contrast');
+    } catch (e) {
+      // ignore server-side renders or environments without DOM
+    }
+  }, [lowContrast]);
 
   // Fetch/create customer account
   useEffect(() => {
@@ -307,7 +325,7 @@ function CustomerKiosk({ user, onLogout }) {
 
   return (
     <WeatherBackground>
-      <div className="kiosk">
+      <div className={`kiosk ${lowContrast ? 'low-contrast' : ''}`}>
         {/* Header */}
         <header className="kiosk__header">
           <div className="kiosk__brand">
@@ -546,6 +564,20 @@ function CustomerKiosk({ user, onLogout }) {
             onClose={() => setShowConfirmation(false)}
           />
         )}
+
+        {/* Low contrast toggle - bottom left */}
+        <button
+          className="kiosk__low-contrast-toggle"
+          onClick={() => {
+            const next = !lowContrast;
+            setLowContrast(next);
+            try { localStorage.setItem('kiosk_low_contrast', JSON.stringify(next)); } catch (e) {}
+          }}
+          aria-pressed={lowContrast}
+          title="Toggle low contrast view"
+        >
+          {lowContrast ? 'Normal contrast' : 'Low contrast'}
+        </button>
       </div>
     </WeatherBackground>
   );
