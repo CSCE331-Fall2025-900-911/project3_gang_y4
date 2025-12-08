@@ -331,6 +331,14 @@
   background: transparent;
 }
 
+.translate-menu {
+  position: absolute;
+  top: var(--space-6);
+  right: var(--space-6);
+  z-index: 2;
+  
+}
+
 /* ========== RESPONSIVE ========== */
 @media (max-width: 640px) {
   .landing {

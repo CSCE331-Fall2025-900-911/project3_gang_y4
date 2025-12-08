@@ -2,10 +2,15 @@ import React, { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import StaffLogin from './StaffLogin';
 import '../styles/LandingPage.css';
+import TranslateMenu from './TranslateMenu';
+import { useTranslation } from '../context/TranslationContext';
 
 const LandingPage = ({ onLogin }) => {
     const navigate = useNavigate();
     const [showStaffLogin, setShowStaffLogin] = useState(false);
+    const {getStringsForPage, setAppLanguage} = useTranslation();
+    const strings = getStringsForPage('landing');
+    
 
     const handleKioskMode = () => {
         navigate('/kiosk-login');
@@ -17,6 +22,10 @@ const LandingPage = ({ onLogin }) => {
 
     const handleCloseStaffLogin = () => {
         setShowStaffLogin(false);
+    };
+
+    const handleTranslate = async (targetLang) => {
+        await setAppLanguage(targetLang, ['landing']);
     };
 
     return (
@@ -33,18 +42,18 @@ const LandingPage = ({ onLogin }) => {
                 <header className="landing__header">
                     <div className="landing__logo">
                         <span className="landing__logo-icon">🧋</span>
-                        <h1 className="landing__logo-text">Kung Fu Tea</h1>
+                        <h1 className="landing__logo-text">{strings.logoText}</h1>
                     </div>
-                    <p className="landing__tagline">Premium Bubble Tea Experience</p>
+                    <p className="landing__tagline">{strings.tagline}</p>
                 </header>
 
                 <h2 className="landing__title">
-                    Welcome to Our<br />
-                    <span className="landing__title-accent">Self-Service Kiosk</span>
+                    {strings.welcomeTitle}<br />
+                    <span className="landing__title-accent">{strings.welcomeTitle2}</span>
                 </h2>
 
                 <p className="landing__subtitle">
-                    Tap below to begin your order
+                    {strings.orderPrompt}
                 </p>
             </section>
 
@@ -61,8 +70,8 @@ const LandingPage = ({ onLogin }) => {
                         <span className="action-card__icon">🥤</span>
                     </div>
                     <div className="action-card__content">
-                        <h3 className="action-card__title">Start Order</h3>
-                        <p className="action-card__desc">Browse menu & customize drinks</p>
+                        <h3 className="action-card__title">{strings.startOrderTitle}</h3>
+                        <p className="action-card__desc">{strings.startOrderDesc}</p>
                     </div>
                     <div className="action-card__arrow">
                         <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5">
@@ -82,8 +91,8 @@ const LandingPage = ({ onLogin }) => {
                         <span className="action-card__icon">🔐</span>
                     </div>
                     <div className="action-card__content">
-                        <h3 className="action-card__title">Staff Login</h3>
-                        <p className="action-card__desc">Employee & Manager access</p>
+                        <h3 className="action-card__title">{strings.staffLoginButton}</h3>
+                        <p className="action-card__desc">{strings.staffLoginDesc}</p>
                     </div>
                     <div className="action-card__arrow">
                         <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5">
@@ -92,6 +101,9 @@ const LandingPage = ({ onLogin }) => {
                     </div>
                 </article>
             </section>
+
+            {/* Translate Menu */}
+            <TranslateMenu onTranslate={handleTranslate} />
 
             {/* Staff Login Modal */}
             {showStaffLogin && (
