@@ -178,15 +178,6 @@ function CustomerKiosk({ user, onLogout }) {
     setEditingCartIndex(null);
   };
 
-
-  // Import all images from the images directory
-  const images = import.meta.glob("../images/*", { eager: true });
-
-  function getImage(imageName) {
-    const imageKey = `../images/${imageName}.png`;
-    return images[imageKey] ? images[imageKey].default : null;
-  }
-
   function getGradientColor(category) {
     switch (category) {
       case 'Tea':
