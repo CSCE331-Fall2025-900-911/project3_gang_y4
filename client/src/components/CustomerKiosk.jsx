@@ -1,6 +1,7 @@
 import React, { useState, useEffect, useRef } from 'react';
 import CustomizationModal from './CustomizationModal';
 import OrderHistoryModal from './OrderHistoryModal';
+import OrderConfirmationModal from './OrderConfirmationModal';
 import { API_ENDPOINTS } from '../config/api';
 import placeholderImage from '../images/placeholdertea.png';
 import WeatherBackground from './WeatherBackground';
@@ -19,6 +20,8 @@ function CustomerKiosk({ user, onLogout }) {
   const [showOrderHistory, setShowOrderHistory] = useState(false);
   const [customerInfo, setCustomerInfo] = useState(null);
   const [customerLoading, setCustomerLoading] = useState(true);
+  const [showConfirmation, setShowConfirmation] = useState(false);
+  const [confirmationData, setConfirmationData] = useState(null);
   const customerFetchInProgress = useRef(false);
 
   // Fetch/create customer account
@@ -279,7 +282,15 @@ function CustomerKiosk({ user, onLogout }) {
       }
 
       setCart([]);
-      alert(`Order placed successfully!\nOrder #${result.order_id}\nTotal: $${total.toFixed(2)}${rewardsMessage}\n\nThank you for your order!`);
+      setConfirmationData({
+        orderId: result.order_id,
+        total: total,
+        rewardsInfo: rewardsMessage ? {
+          earnedPoints: Math.round(total * 100),
+          newBalance: rewardsMessage.split('New balance: ')[1]?.split(' points')[0] || 0
+        } : null
+      });
+      setShowConfirmation(true);
     } catch (error) {
       console.error('Checkout error:', error);
       alert(`Failed to complete order: ${error.message}\nPlease try again or contact staff.`);
@@ -524,6 +535,16 @@ function CustomerKiosk({ user, onLogout }) {
         {/* Order History Modal */}
         {showOrderHistory && customerInfo?.custid && (
           <OrderHistoryModal customerId={customerInfo.custid} onClose={() => setShowOrderHistory(false)} />
+        )}
+
+        {/* Order Confirmation Modal */}
+        {showConfirmation && confirmationData && (
+          <OrderConfirmationModal
+            orderId={confirmationData.orderId}
+            total={confirmationData.total}
+            rewardsInfo={confirmationData.rewardsInfo}
+            onClose={() => setShowConfirmation(false)}
+          />
         )}
       </div>
     </WeatherBackground>
