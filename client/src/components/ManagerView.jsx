@@ -7,14 +7,44 @@ import '../styles/ManagerView.css';
 
 function ManagerView({ user, onLogout }) {
   const [activeTab, setActiveTab] = useState('checkout');
+  const [lowContrast, setLowContrast] = useState(() => {
+    try {
+      return JSON.parse(localStorage.getItem('kiosk_low_contrast')) || false;
+    } catch (e) {
+      return false;
+    }
+  });
+
+  // Keep body-level low-contrast class in sync for cross-page styling
+  useEffect(() => {
+    try {
+      const host = document.body || document.documentElement;
+      if (lowContrast) host.classList.add('low-contrast');
+      else host.classList.remove('low-contrast');
+    } catch (e) {
+      // ignore server-side renders or environments without DOM
+    }
+  }, [lowContrast]);
 
   return (
     <div className="manager-view">
       <header className="manager-header">
         <div className="manager-header-left">
           <h1>Manager Dashboard</h1>
-          <button className="manager-low-contrast-btn" aria-label="Toggle low contrast">
-            Low contrast
+          <button
+            className="manager-low-contrast-btn"
+            onClick={() => {
+              const next = !lowContrast;
+              setLowContrast(next);
+              try {
+                localStorage.setItem('kiosk_low_contrast', JSON.stringify(next));
+              } catch (e) {}
+            }}
+            aria-pressed={lowContrast}
+            aria-label="Toggle low contrast view"
+            title="Toggle low contrast view"
+          >
+            {lowContrast ? 'Normal contrast' : 'Low contrast'}
           </button>
         </div>
         <div className="manager-user-info">
