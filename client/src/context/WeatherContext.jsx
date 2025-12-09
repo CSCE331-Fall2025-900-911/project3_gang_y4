@@ -1,5 +1,7 @@
 import React, { createContext, useContext, useEffect, useState } from 'react';
 import { weatherService } from '../services/weatherService';
+import TranslateMenu from '../components/TranslateMenu';
+import { useTranslation } from './TranslationContext';
 
 const WeatherContext = createContext();
 
@@ -8,6 +10,10 @@ export function WeatherProvider({ children }) {
     const [weatherType, setWeatherType] = useState('clear');
     const [loading, setLoading] = useState(true);
     const [override, setOverride] = useState(null);
+    const {getStringsForPage} = useTranslation();
+    
+    // Get fresh strings on every render (this updates when language changes)
+    const strings = getStringsForPage('weather');
 
     useEffect(() => {
         // Fetch weather immediately
@@ -31,17 +37,30 @@ export function WeatherProvider({ children }) {
         }
     };
 
+    // Helper function to get label for a weather state
+    const getLabelForState = (type, isDay, weatherStrings) => {
+        if (type === 'clear' && isDay === 1) return weatherStrings.clearDay;
+        if (type === 'clear' && isDay === 0) return weatherStrings.clearNight;
+        if (type === 'cloudy' && isDay === 1) return weatherStrings.cloudyDay;
+        if (type === 'cloudy' && isDay === 0) return weatherStrings.cloudyNight;
+        if (type === 'rain') return weatherStrings.rain;
+        if (type === 'storm') return weatherStrings.storm;
+        if (type === 'snow') return weatherStrings.snow;
+        return weatherStrings.liveWeather;
+    };
+
     // Debug: Cycle through weather states
     const debugCycleWeather = () => {
+        const currentStrings = getStringsForPage('weather');
         setOverride(prev => {
             const states = [
-                { type: 'clear', isDay: 1, label: 'Clear (Day)' },
-                { type: 'clear', isDay: 0, label: 'Clear (Night)' },
-                { type: 'cloudy', isDay: 1, label: 'Cloudy (Day)' },
-                { type: 'cloudy', isDay: 0, label: 'Cloudy (Night)' },
-                { type: 'rain', isDay: 1, label: 'Rain' },
-                { type: 'storm', isDay: 0, label: 'Storm' },
-                { type: 'snow', isDay: 0, label: 'Snow' },
+                { type: 'clear', isDay: 1 },
+                { type: 'clear', isDay: 0 },
+                { type: 'cloudy', isDay: 1 },
+                { type: 'cloudy', isDay: 0 },
+                { type: 'rain', isDay: 1 },
+                { type: 'storm', isDay: 0 },
+                { type: 'snow', isDay: 0 },
                 null // Back to real
             ];
 
@@ -56,10 +75,19 @@ export function WeatherProvider({ children }) {
         });
     };
 
-    // Derived values based on override
+    const refreshWeather = () => {
+        // Force a re-render by updating override to trigger label recalculation
+        if (override) {
+            setOverride(prev => ({ ...prev }));
+        }
+    };
+
+    // Derived values based on override - compute label dynamically with current strings
     const effectiveWeatherData = override ? { ...weatherData, is_day: override.isDay } : weatherData;
     const effectiveWeatherType = override ? override.type : weatherType;
-    const weatherLabel = override ? override.label : 'Live Weather';
+    const weatherLabel = override 
+        ? getLabelForState(override.type, override.isDay, strings)
+        : strings.liveWeather;
 
     return (
         <WeatherContext.Provider value={{
@@ -67,7 +95,8 @@ export function WeatherProvider({ children }) {
             weatherType: effectiveWeatherType,
             loading,
             debugCycleWeather,
-            weatherLabel
+            weatherLabel,
+            refreshWeather
         }}>
             {children}
         </WeatherContext.Provider>

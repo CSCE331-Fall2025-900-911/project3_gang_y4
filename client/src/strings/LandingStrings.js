@@ -8,5 +8,6 @@ export const LANDING_STRINGS = {
     startOrderTitle: "Start Order",
     startOrderDesc: "Browse menu & customize drinks",
     staffLoginButton: "Staff Login",
-    staffLoginDesc: "Employee & Manager access"
+    staffLoginDesc: "Employee & Manager access",
+    testText: "This is some sample text"
 };

@@ -1,22 +1,37 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { API_ENDPOINTS } from '../config/api';
-// We reused some styles, or we can define new ones. 
-// Assuming LoginScreen.css classes are global or we can import them.
-// Ideally we should have scoped styles, but for now let's rely on structure.
+import TranslateMenu from './TranslateMenu';
+import { useTranslation } from '../context/TranslationContext';
 
 const StaffLogin = ({ onLogin, onClose }) => {
     const navigate = useNavigate();
     const [showCredentialForm, setShowCredentialForm] = useState(false);
-    const [loginType, setLoginType] = useState(null); // 'employee' or 'manager'
+    const [loginType, setLoginType] = useState(null);
     const [credentials, setCredentials] = useState({ username: '', password: '' });
     const [staffLoading, setStaffLoading] = useState(false);
     const [staffError, setStaffError] = useState(null);
+    const {getStringsForPage, setAppLanguage, language} = useTranslation();
+    const strings = getStringsForPage('staffLogin');
+    
+    // Update strings whenever language changes
+
+    // DEBUG: Log strings to see what's available
+    useEffect(() => {
+        console.log('StaffLogin strings:', strings);
+        console.log('usernameLabel:', strings.usernameLabel);
+        console.log('passwordLabel:', strings.passwordLabel);
+    }, [strings]);
+
+    const handleTranslate = async (targetLang) => {
+        await setAppLanguage(targetLang, ['staffLogin']);
+    }
 
     const handleStaffTypeSelection = (type) => {
         setLoginType(type);
         setShowCredentialForm(true);
         setStaffError(null);
+        handleTranslate(language);
     };
 
     const handleBackToStaffSelection = () => {
@@ -90,7 +105,7 @@ const StaffLogin = ({ onLogin, onClose }) => {
         return (
             <div className="staff-login-container">
                 <h2 style={{ textAlign: 'center', marginBottom: '1.5rem', color: '#2d3436' }}>
-                    {loginType === 'employee' ? 'Employee Login' : 'Manager Login'}
+                    {loginType === 'employee' ? strings.employeeButton : strings.managerButton}
                 </h2>
                 <form onSubmit={handleStaffLogin} style={{ display: 'flex', flexDirection: 'column', gap: '1rem' }}>
                     {staffError && (
@@ -100,7 +115,7 @@ const StaffLogin = ({ onLogin, onClose }) => {
                     )}
                     <input
                         type="text"
-                        placeholder="Username"
+                        placeholder={strings.usernameLabel || 'Username'}
                         value={credentials.username}
                         onChange={(e) => setCredentials({ ...credentials, username: e.target.value })}
                         required
@@ -109,7 +124,7 @@ const StaffLogin = ({ onLogin, onClose }) => {
                     />
                     <input
                         type="password"
-                        placeholder="Password"
+                        placeholder={strings.passwordLabel || 'Password'}
                         value={credentials.password}
                         onChange={(e) => setCredentials({ ...credentials, password: e.target.value })}
                         required
@@ -121,14 +136,14 @@ const StaffLogin = ({ onLogin, onClose }) => {
                         style={{ padding: '12px', borderRadius: '8px', border: 'none', background: '#0984e3', color: 'white', fontSize: '1rem', cursor: 'pointer', fontWeight: 'bold' }}
                         disabled={staffLoading}
                     >
-                        {staffLoading ? 'Logging in...' : 'Login'}
+                        {staffLoading ? (strings.loggingIn || 'Logging in...') : (strings.login || 'Login')}
                     </button>
                     <button
                         type="button"
                         onClick={handleBackToStaffSelection}
                         style={{ padding: '8px', background: 'none', border: 'none', color: '#636e72', cursor: 'pointer' }}
                     >
-                        ← Back
+                        ← {strings.back || 'Back'}
                     </button>
                 </form>
             </div>
@@ -138,8 +153,8 @@ const StaffLogin = ({ onLogin, onClose }) => {
     return (
         <div className="staff-login-container">
             <div style={{ textAlign: 'center', marginBottom: '2rem' }}>
-                <h2 style={{ color: '#2d3436', marginBottom: '0.5rem' }}>Staff Portal</h2>
-                <p style={{ color: '#636e72' }}>Select your role to continue</p>
+                <h2 style={{ color: '#2d3436', marginBottom: '0.5rem' }}>{strings.staffPortal}</h2>
+                <p style={{ color: '#636e72' }}>{strings.portalDesc}</p>
             </div>
             <div style={{ display: 'flex', flexDirection: 'column', gap: '1rem' }}>
                 <button
@@ -162,7 +177,7 @@ const StaffLogin = ({ onLogin, onClose }) => {
                     onMouseOver={(e) => e.target.style.borderColor = '#0984e3'}
                     onMouseOut={(e) => e.target.style.borderColor = '#dfe6e9'}
                 >
-                    <span>👤</span> Employee Login
+                    <span>👤</span> {strings.employeeButton}
                 </button>
                 <button
                     onClick={() => handleStaffTypeSelection('manager')}
@@ -184,7 +199,7 @@ const StaffLogin = ({ onLogin, onClose }) => {
                     onMouseOver={(e) => e.target.style.borderColor = '#0984e3'}
                     onMouseOut={(e) => e.target.style.borderColor = '#dfe6e9'}
                 >
-                    <span>🔑</span> Manager Login
+                    <span>🔑</span> {strings.managerButton}
                 </button>
             </div>
         </div>

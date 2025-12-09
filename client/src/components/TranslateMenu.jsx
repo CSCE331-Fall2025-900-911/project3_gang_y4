@@ -12,7 +12,8 @@ export const LANG_OPTIONS = [
 ];
 
 const TranslateMenu = ({ onTranslate }) => {
-  const [lang, setLang] = useState('en');
+  
+  const { language, setAppLanguage } = useTranslation();
   const [loading, setLoading] = useState(false);
 
   const handleChange = async (e) => {
@@ -31,7 +32,7 @@ const TranslateMenu = ({ onTranslate }) => {
 
   return (
     <div className="translate-menu">
-      <select value={lang} onChange={handleChange} disabled={loading}>
+      <select value={language} onChange={(e) => setAppLanguage(e.target.value)}>
         {LANG_OPTIONS.map((l) => (
           <option key={l.code} value={l.code}>
             {l.label}
