@@ -188,6 +188,16 @@ function LoginScreen({ onLogin }) {
             <div className="login__bg-orb login__bg-orb--2" />
           </div>
 
+          <button
+            className="login__back-btn"
+            onClick={() => navigate('/')}
+            aria-label="Back to landing page"
+          >
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+              <path d="M19 12H5M12 19l-7-7 7-7"/>
+            </svg>
+          </button>
+
           <section className="login__card login__card--form">
             <header className="login__header">
               <span className="login__icon">✉️</span>
@@ -266,6 +276,16 @@ function LoginScreen({ onLogin }) {
           <div className="login__bg-orb login__bg-orb--1" />
           <div className="login__bg-orb login__bg-orb--2" />
         </div>
+
+        <button
+          className="login__back-btn"
+          onClick={() => navigate('/')}
+          aria-label="Back to landing page"
+        >
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+            <path d="M19 12H5M12 19l-7-7 7-7"/>
+          </svg>
+        </button>
 
         <section className="login__card">
           <header className="login__header">
