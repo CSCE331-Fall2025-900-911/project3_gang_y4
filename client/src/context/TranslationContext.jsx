@@ -100,50 +100,81 @@ export function TranslationProvider({ children, availableStringFiles = {} }) {
   };
 
   const translateDynamicContent = async (texts, cacheKey, targetLang) => {
-    console.log(`Translating dynamic content with key "${cacheKey}" to "${targetLang}"`);
-    if (targetLang === 'en') return texts;
- 
-    const cached = dynamicTranslations[targetLang]?.[cacheKey];
-    if(cached) {
-      console.log(`Using cached dynamic translations for key "${cacheKey}"`);
-      return cached;
-    }
+  console.log(`Translating dynamic content with key "${cacheKey}" to "${targetLang}"`);
+  if (targetLang === 'en') return texts;
 
-    try {
-      const res = await fetch('/api/translate', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' }, 
-        body: JSON.stringify({
-          text: texts,
-          target: targetLang
-        })
-      });
-      const data = await res.json();
-      console.log('API response for dynamic content:', data);
+  const cached = dynamicTranslations[targetLang]?.[cacheKey];
+  if (cached) {
+    console.log(`Using cached dynamic translations for key "${cacheKey}"`);
+    return cached;
+  }
 
-      if (!res.ok) throw new Error(data.error || 'Translation API error');
+  try {
+    // Match translatePage URL resolution
+    const endpoint = (API_URL || '') + '/api/translate';
 
-      const translatedTexts = data.translations.map(t => t.translatedText);
-      console.log(`Translated dynamic content for key "${cacheKey}":`, translatedTexts);
+    const res = await fetch(endpoint, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({
+        text: texts,
+        target: targetLang
+      })
+    });
 
-      const newDynamicTranslations = {
-        ...(dynamicTranslations || {}),
-        [targetLang]: {
-          ...(dynamicTranslations[targetLang] || {}),
-          [cacheKey]: translatedTexts
-        }
-      };
-
-      setDynamicTranslations(newDynamicTranslations);
-      localStorage.setItem('dynamicTranslations', JSON.stringify(newDynamicTranslations));
-      console.log('Persisted dynamic translations to localStorage');
-
-      return translatedTexts;
-    } catch (err) {
-      console.error('translateDynamicContent error:', err);
+    // Be robust: read raw text first
+    const raw = await res.text();
+    if (!raw) {
+      const err = new Error(`Empty response from translation API (status ${res.status})`);
+      console.error('translateDynamicContent error', err);
       throw err;
     }
-  };
+
+    let data;
+    try {
+      data = JSON.parse(raw);
+    } catch (parseErr) {
+      const err = new Error('Invalid JSON from translation API');
+      console.error('translateDynamicContent error - invalid JSON', parseErr, 'raw=', raw);
+      throw err;
+    }
+
+    if (!res.ok) {
+      const err = new Error(data?.error || `Translation API error (status ${res.status})`);
+      console.error('translateDynamicContent error', err, data);
+      throw err;
+    }
+
+    if (!data.translations || !Array.isArray(data.translations)) {
+      const err = new Error('Unexpected translation API response shape');
+      console.error('translateDynamicContent error', err, data);
+      throw err;
+    }
+
+    const translatedTexts = data.translations.map(t =>
+      t.translatedText || t.text || ''
+    );
+
+    console.log(`Translated dynamic content for key "${cacheKey}":`, translatedTexts);
+
+    const newDynamicTranslations = {
+      ...(dynamicTranslations || {}),
+      [targetLang]: {
+        ...(dynamicTranslations[targetLang] || {}),
+        [cacheKey]: translatedTexts
+      }
+    };
+
+    setDynamicTranslations(newDynamicTranslations);
+    localStorage.setItem('dynamicTranslations', JSON.stringify(newDynamicTranslations));
+    console.log('Persisted dynamic translations to localStorage');
+
+    return translatedTexts;
+  } catch (err) {
+    console.error('translateDynamicContent error:', err);
+    throw err;
+  }
+};
     
   const setAppLanguage = async (targetLang, pageKeys = Object.keys(availableStringFiles)) => {
     console.log(`Setting app language to "${targetLang}" for pages:`, pageKeys);
