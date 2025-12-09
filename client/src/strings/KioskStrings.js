@@ -1,8 +1,20 @@
 
 export const KIOSK_STRINGS = {
-    welcomeMessage: "Welcome to Kung Fu Tea Kiosk",
-    selectLanguagePrompt: "Please select your preferred language:",
-    startOrderButton: "Start Your Order",
-    helpButton: "Need Help?",
-    cancelOrderButton: "Cancel Order"
+    welcome: "Welcome",
+    kfTea: "Kung Fu Tea",
+    orders: "Orders",
+    signOut: "Sign Out",
+    menu: "Menu",
+    loading: "Loading...",
+    tAgain: "Try Again",
+    add: "+ Add",
+    yourOrder: "Your Order",
+    emptyOrder: "Your cart is empty",
+    instructions: "Tap items to add them",
+    subtotal: "Subtotal",
+    tax: "Tax",
+    total: "Total",
+    cancel: "Cancel",
+    pay: "Pay",
+    payQ: "How would you like to pay?",
 };

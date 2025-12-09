@@ -5,6 +5,8 @@ import { API_ENDPOINTS } from '../config/api';
 import WeatherBackground from './WeatherBackground';
 import { useWeather } from '../context/WeatherContext';
 import '../styles/LoginScreen.css';
+import TranslateMenu from './TranslateMenu';
+import { useTranslation } from '../context/TranslationContext';
 
 function LoginScreen({ onLogin }) {
   const navigate = useNavigate();
@@ -17,8 +19,21 @@ function LoginScreen({ onLogin }) {
   const [googleError, setGoogleError] = useState(null);
   const [emailLoading, setEmailLoading] = useState(false);
   const [emailError, setEmailError] = useState(null);
+  const {getStringsForPage, setAppLanguage} = useTranslation();
+  const strings = getStringsForPage('login');
+  const { refreshWeather } = useWeather();
 
   const { debugCycleWeather, weatherLabel } = useWeather();
+
+  const handleTranslate = async (targetLang) => {
+      await setAppLanguage(targetLang, ['login']);
+      refreshWeather();
+  };
+
+  useEffect(() => {
+          console.log('StaffLogin strings:', strings);
+          console.log('testText:', strings.testText);
+  }, [strings]);
 
   // Google OAuth login handler
   const handleGoogleLogin = useGoogleLogin({
@@ -151,7 +166,7 @@ function LoginScreen({ onLogin }) {
   };
 
   const handleGuestLogin = () => {
-    onLogin({ type: 'guest', name: 'Guest' });
+    onLogin({ type: 'guest', name: strings.guestName });
     navigate('/customer');
   };
 
@@ -173,11 +188,21 @@ function LoginScreen({ onLogin }) {
             <div className="login__bg-orb login__bg-orb--2" />
           </div>
 
+          <button
+            className="login__back-btn"
+            onClick={() => navigate('/')}
+            aria-label="Back to landing page"
+          >
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+              <path d="M19 12H5M12 19l-7-7 7-7"/>
+            </svg>
+          </button>
+
           <section className="login__card login__card--form">
             <header className="login__header">
               <span className="login__icon">✉️</span>
-              <h1 className="login__title">Sign In</h1>
-              <p className="login__subtitle">Enter your email and password</p>
+              <h1 className="login__title">{strings.signIn}</h1>
+              <p className="login__subtitle">{strings.signInSubtitle}</p>
             </header>
 
             <form className="login__form" onSubmit={handleEmailLoginSubmit}>
@@ -191,7 +216,7 @@ function LoginScreen({ onLogin }) {
               )}
 
               <div className="login__field">
-                <label className="login__label" htmlFor="email">Email</label>
+                <label className="login__label" htmlFor="email">{strings.emailLabel}</label>
                 <input
                   id="email"
                   type="email"
@@ -205,7 +230,7 @@ function LoginScreen({ onLogin }) {
               </div>
 
               <div className="login__field">
-                <label className="login__label" htmlFor="password">Password</label>
+                <label className="login__label" htmlFor="password">{strings.passwordLabel}</label>
                 <input
                   id="password"
                   type="password"
@@ -222,10 +247,10 @@ function LoginScreen({ onLogin }) {
                 {emailLoading ? (
                   <>
                     <span className="login__spinner" />
-                    Signing in...
+                    {strings.googleLoading1}
                   </>
                 ) : (
-                  'Sign In'
+                  strings.signIn
                 )}
               </button>
 
@@ -234,7 +259,7 @@ function LoginScreen({ onLogin }) {
                 className="login__btn login__btn--ghost"
                 onClick={handleBackFromEmailLogin}
               >
-                ← Back to options
+                ← {strings.back}
               </button>
             </form>
           </section>
@@ -252,13 +277,23 @@ function LoginScreen({ onLogin }) {
           <div className="login__bg-orb login__bg-orb--2" />
         </div>
 
+        <button
+          className="login__back-btn"
+          onClick={() => navigate('/')}
+          aria-label="Back to landing page"
+        >
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+            <path d="M19 12H5M12 19l-7-7 7-7"/>
+          </svg>
+        </button>
+
         <section className="login__card">
           <header className="login__header">
             <div className="login__logo">
               <span className="login__logo-icon">🧋</span>
             </div>
-            <h1 className="login__title">Welcome Back</h1>
-            <p className="login__subtitle">Sign in to earn rewards & track orders</p>
+            <h1 className="login__title">{strings.loginTitle}</h1>
+            <p className="login__subtitle">{strings.loginSubtitle}</p>
           </header>
 
           {googleError && (
@@ -282,7 +317,7 @@ function LoginScreen({ onLogin }) {
                 <path fill="#FBBC05" d="M5.84 14.09c-.22-.66-.35-1.36-.35-2.09s.13-1.43.35-2.09V7.07H2.18C1.43 8.55 1 10.22 1 12s.43 3.45 1.18 4.93l2.85-2.22.81-.62z" />
                 <path fill="#EA4335" d="M12 5.38c1.62 0 3.06.56 4.21 1.64l3.15-3.15C17.45 2.09 14.97 1 12 1 7.7 1 3.99 3.47 2.18 7.07l3.66 2.84c.87-2.6 3.3-4.53 6.16-4.53z" />
               </svg>
-              {googleLoading ? 'Signing in...' : 'Continue with Google'}
+              {googleLoading ? strings.googleLoading1 : strings.googleLoading2}
             </button>
 
             <button
@@ -293,11 +328,11 @@ function LoginScreen({ onLogin }) {
                 <rect x="2" y="4" width="20" height="16" rx="2" />
                 <path d="M22 6l-10 7L2 6" />
               </svg>
-              Sign in with Email
+              {strings.emailLogin}
             </button>
 
             <div className="login__divider">
-              <span>or</span>
+              <span>{strings.or}</span>
             </div>
 
             <button
@@ -308,12 +343,15 @@ function LoginScreen({ onLogin }) {
                 <path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2" />
                 <circle cx="12" cy="7" r="4" />
               </svg>
-              Continue as Guest
+              {strings.guestLogin}
             </button>
           </div>
 
+          
+          
+
           <footer className="login__footer">
-            <p style={{ marginBottom: '1rem' }}>Guest checkout does not earn rewards</p>
+            <p style={{ marginBottom: '1rem' }}>{strings.guestDisclaimer}</p>
 
             {/* DEBUG BUTTON */}
             <button
@@ -329,7 +367,7 @@ function LoginScreen({ onLogin }) {
                 backdropFilter: 'blur(4px)'
               }}
             >
-              🎨 Theme: {weatherLabel || 'Live'}
+              🎨 {weatherLabel || 'Live'}
             </button>
             
             {/* Low contrast toggle - bottom left (shared key) */}
@@ -347,6 +385,8 @@ function LoginScreen({ onLogin }) {
             </button>
           </footer>
         </section>
+        {/* Translate Menu */}
+          <TranslateMenu onTranslate={handleTranslate} />
       </main>
     </WeatherBackground>
   );

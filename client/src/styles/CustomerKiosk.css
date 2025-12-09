@@ -24,6 +24,26 @@
   z-index: var(--z-sticky);
 }
 
+.kiosk .translate-menu {
+  position: relative;
+  top: 0;
+  right: 0;
+  z-index: 2;
+}
+
+
+.kiosk .translate-menu select {
+  padding: var(--space-3) var(--space-4);
+  border-radius: var(--radius-xl);
+  font-size: var(--text-sm);
+  font-weight: var(--font-semibold);
+  transition: all var(--duration-base) var(--ease-out);
+  background: transparent;
+  color: var(--neutral-700);
+  border: 2px solid var(--neutral-300);
+  cursor: pointer;
+}
+
 .kiosk__brand {
   display: flex;
   align-items: center;
@@ -918,3 +938,4 @@
     min-height: 180px;
   }
 }
+

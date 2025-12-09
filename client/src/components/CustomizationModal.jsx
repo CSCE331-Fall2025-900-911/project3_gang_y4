@@ -2,15 +2,23 @@ import React, { useState, useEffect } from 'react';
 import ReactDOM from 'react-dom';
 import { API_ENDPOINTS } from '../config/api';
 import '../styles/CustomizationModal.css';
+import { useTranslation } from '../context/TranslationContext';
 
 function CustomizationModal({ item, onClose, onCancel, onConfirm, existingCustomizations = null }) {
     // Support both onClose and onCancel props for compatibility
     const handleClose = onClose || onCancel;
+    
+    // Original data from API (always in English)
     const [addons, setAddons] = useState([]);
     const [customizations, setCustomizations] = useState({ ice: [], sweetness: [], size: [] });
+    
+    // NEW: Translated versions for display
+    const [translatedAddons, setTranslatedAddons] = useState([]);
+    const [translatedCustomizations, setTranslatedCustomizations] = useState({ ice: [], sweetness: [], size: [] });
+    
     const [loading, setLoading] = useState(true);
 
-    // Selected options
+    // Selected options (store by ID, not by name)
     const [selectedAddons, setSelectedAddons] = useState([]);
     const [selectedIce, setSelectedIce] = useState(null);
     const [selectedSweetness, setSelectedSweetness] = useState(null);
@@ -18,6 +26,11 @@ function CustomizationModal({ item, onClose, onCancel, onConfirm, existingCustom
 
     const [quantity, setQuantity] = useState(1);
 
+    // Get translation functions and current language
+    const { getStringsForPage, translateDynamicContent, language } = useTranslation();
+    const strings = getStringsForPage('customizationModal');
+
+    // Initialize selected options from existing customizations
     useEffect(() => {
         const initializeOptions = async () => {
             await fetchCustomizationOptions();
@@ -56,6 +69,7 @@ function CustomizationModal({ item, onClose, onCancel, onConfirm, existingCustom
             const addonsResponse = await fetch(API_ENDPOINTS.CUSTOMIZATIONS_ADDONS);
             if (addonsResponse.ok) {
                 const addonsData = await addonsResponse.json();
+                // Store original English data
                 setAddons(Array.isArray(addonsData) ? addonsData : []);
             }
 
@@ -63,6 +77,7 @@ function CustomizationModal({ item, onClose, onCancel, onConfirm, existingCustom
             const customResponse = await fetch(API_ENDPOINTS.CUSTOMIZATIONS_GROUPED);
             if (customResponse.ok) {
                 customData = await customResponse.json();
+                // Store original English data
                 setCustomizations({
                     ice: customData.ice || [],
                     sweetness: customData.sweetness || [],
@@ -76,6 +91,129 @@ function CustomizationModal({ item, onClose, onCancel, onConfirm, existingCustom
         }
     };
 
+    // NEW: Effect to translate customization options when language changes
+    useEffect(() => {
+        // Only translate if we have data
+        if (addons.length === 0 && 
+            customizations.ice.length === 0 && 
+            customizations.sweetness.length === 0 && 
+            customizations.size.length === 0) {
+            return;
+        }
+
+        const translateOptions = async () => {
+            console.log(`Translating customization options to language: ${language}`);
+            
+            // If English, just use original data
+            if (language === 'en') {
+                setTranslatedAddons(addons);
+                setTranslatedCustomizations(customizations);
+                return;
+            }
+
+            try {
+                // Translate Add-ons
+                if (addons.length > 0) {
+                    const addonTexts = addons.map(addon => addon.name);
+                    const translatedAddonNames = await translateDynamicContent(
+                        addonTexts,
+                        'customization-addons',
+                        language
+                    );
+                    
+                    // Map translated names back to addon objects
+                    const translatedAddonsList = addons.map((addon, index) => ({
+                        ...addon,
+                        originalName: addon.name, // Store original for API calls
+                        name: translatedAddonNames[index] // Use translated for display
+                    }));
+                    
+                    setTranslatedAddons(translatedAddonsList);
+                } else {
+                    setTranslatedAddons([]);
+                }
+
+                // Translate Ice options
+                if (customizations.ice.length > 0) {
+                    const iceTexts = customizations.ice.map(ice => ice.name);
+                    const translatedIceNames = await translateDynamicContent(
+                        iceTexts,
+                        'customization-ice',
+                        language
+                    );
+                    
+                    const translatedIceList = customizations.ice.map((ice, index) => ({
+                        ...ice,
+                        originalName: ice.name,
+                        name: translatedIceNames[index]
+                    }));
+                    
+                    setTranslatedCustomizations(prev => ({
+                        ...prev,
+                        ice: translatedIceList
+                    }));
+                } else {
+                    setTranslatedCustomizations(prev => ({ ...prev, ice: [] }));
+                }
+
+                // Translate Sweetness options
+                if (customizations.sweetness.length > 0) {
+                    const sweetnessTexts = customizations.sweetness.map(sweet => sweet.name);
+                    const translatedSweetnessNames = await translateDynamicContent(
+                        sweetnessTexts,
+                        'customization-sweetness',
+                        language
+                    );
+                    
+                    const translatedSweetnessList = customizations.sweetness.map((sweet, index) => ({
+                        ...sweet,
+                        originalName: sweet.name,
+                        name: translatedSweetnessNames[index]
+                    }));
+                    
+                    setTranslatedCustomizations(prev => ({
+                        ...prev,
+                        sweetness: translatedSweetnessList
+                    }));
+                } else {
+                    setTranslatedCustomizations(prev => ({ ...prev, sweetness: [] }));
+                }
+
+                // Translate Size options
+                if (customizations.size.length > 0) {
+                    const sizeTexts = customizations.size.map(size => size.name);
+                    const translatedSizeNames = await translateDynamicContent(
+                        sizeTexts,
+                        'customization-size',
+                        language
+                    );
+                    
+                    const translatedSizeList = customizations.size.map((size, index) => ({
+                        ...size,
+                        originalName: size.name,
+                        name: translatedSizeNames[index]
+                    }));
+                    
+                    setTranslatedCustomizations(prev => ({
+                        ...prev,
+                        size: translatedSizeList
+                    }));
+                } else {
+                    setTranslatedCustomizations(prev => ({ ...prev, size: [] }));
+                }
+
+                console.log('Customization options translation complete');
+            } catch (err) {
+                console.error('Error translating customization options:', err);
+                // On error, fall back to original English data
+                setTranslatedAddons(addons);
+                setTranslatedCustomizations(customizations);
+            }
+        };
+
+        translateOptions();
+    }, [language, addons, customizations, translateDynamicContent]);
+
     const toggleAddon = (addonId) => {
         setSelectedAddons(prev =>
             prev.includes(addonId)
@@ -87,13 +225,14 @@ function CustomizationModal({ item, onClose, onCancel, onConfirm, existingCustom
     const calculateTotal = () => {
         let total = item.price * quantity;
 
-        // Add addon prices
+        // Add addon prices (use original addons array for price calculation)
         selectedAddons.forEach(addonId => {
             const addon = addons.find(a => a.id === addonId);
             if (addon) total += addon.price * quantity;
         });
 
         // Add Size Price (Only if NOT regular/medium)
+        // Use original customizations array for price calculation
         if (selectedSize && selectedSize !== 'regular') {
             const sizeOpt = customizations.size.find(s => s.id === selectedSize);
             if (sizeOpt) total += sizeOpt.price * quantity;
@@ -106,42 +245,57 @@ function CustomizationModal({ item, onClose, onCancel, onConfirm, existingCustom
         const allCustomizations = [];
 
         // Add Size (If not Regular/Medium)
+        // Use ORIGINAL data for storing in cart/API
         if (selectedSize && selectedSize !== 'regular') {
             const size = customizations.size.find(s => s.id === selectedSize);
-            if (size) allCustomizations.push({ id: size.id, name: size.name, price: size.price });
+            if (size) allCustomizations.push({ 
+                id: size.id, 
+                name: size.name, // Store original English name
+                price: size.price 
+            });
         }
 
-        // Add selected add-ons
+        // Add selected add-ons (use original data)
         selectedAddons.forEach(addonId => {
             const addon = addons.find(a => a.id === addonId);
-            if (addon) allCustomizations.push({ id: addon.id, name: addon.name, price: addon.price });
+            if (addon) allCustomizations.push({ 
+                id: addon.id, 
+                name: addon.name, // Store original English name
+                price: addon.price 
+            });
         });
 
-        // Add ice (If not Regular)
+        // Add ice (If not Regular) (use original data)
         if (selectedIce && selectedIce !== 'regular') {
             const ice = customizations.ice.find(i => i.id === selectedIce);
-            if (ice) allCustomizations.push({ id: ice.id, name: ice.name, price: ice.price });
+            if (ice) allCustomizations.push({ 
+                id: ice.id, 
+                name: ice.name, // Store original English name
+                price: ice.price 
+            });
         }
 
-        // Add sweetness (If not Regular)
+        // Add sweetness (If not Regular) (use original data)
         if (selectedSweetness && selectedSweetness !== 'regular') {
             const sweet = customizations.sweetness.find(s => s.id === selectedSweetness);
-            if (sweet) allCustomizations.push({ id: sweet.id, name: sweet.name, price: sweet.price });
+            if (sweet) allCustomizations.push({ 
+                id: sweet.id, 
+                name: sweet.name, // Store original English name
+                price: sweet.price 
+            });
         }
 
-        // Create display name with customizations
-        let displayName = item.name;
-        if (allCustomizations.length > 0) {
-            displayName = `${item.name}`;
-        }
+        // Use the item's name (which may already be translated if passed from menu)
+        let displayName = item.displayName || item.name;
 
+        // Return item with original name for API, but translated displayName
         onConfirm({
             id: item.id,
-            name: item.name,
-            displayName: displayName,
+            name: item.originalName || item.name, // Store original English name
+            displayName: displayName, // Use translated name for display
             price: item.price,
             quantity,
-            customizations: allCustomizations,
+            customizations: allCustomizations, // Contains original English names
             totalPrice: parseFloat(calculateTotal())
         });
     };
@@ -159,41 +313,43 @@ function CustomizationModal({ item, onClose, onCancel, onConfirm, existingCustom
         );
     }
 
-    // Show options if any exist (including the hardcoded Size check logic)
-    const hasOptions = addons.length > 0 || customizations.ice.length > 0 || customizations.sweetness.length > 0 || customizations.size.length > 0;
+    // Show options if any exist (using translated data for display)
+    const hasOptions = translatedAddons.length > 0 || 
+                       translatedCustomizations.ice.length > 0 || 
+                       translatedCustomizations.sweetness.length > 0 || 
+                       translatedCustomizations.size.length > 0;
 
     return ReactDOM.createPortal(
         <div className="modal-overlay" onClick={handleClose}>
             <div className="modal-content customization-modal" onClick={(e) => e.stopPropagation()}>
                 <button className="modal-close" onClick={handleClose}>×</button>
 
-                <h2>Customize Your Drink</h2>
-                <h3 className="item-name">{item.name}</h3>
-                <p className="base-price">Base Price: ${item.price.toFixed(2)}</p>
+                <h2>{strings.title}</h2>
+                {/* Display translated item name */}
+                <h3 className="item-name">{item.displayName || item.name}</h3>
+                <p className="base-price">{strings.basePrice}: ${item.price.toFixed(2)}</p>
 
                 {!hasOptions && (
                     <p style={{ textAlign: 'center', color: '#999', margin: '20px 0' }}>
-                        No customization options available
+                        {strings.noCustomizations}
                     </p>
                 )}
 
-                {/* Size Section */}
-                {/* Only show if we have DB options (Large) OR we want to force it.
-            Usually good to check customizations.size.length > 0 */}
-                {customizations.size.length > 0 && (
+                {/* Size Section - USES TRANSLATED DATA */}
+                {translatedCustomizations.size.length > 0 && (
                     <div className="customization-section">
-                        <h4>Size</h4>
+                        <h4>{strings.sizeLabel}</h4>
                         <div className="options-grid">
-                            {/* 1. Hardcoded Medium Button */}
+                            {/* 1. Hardcoded Medium Button (could be translated via strings file) */}
                             <button
                                 className={`option-button ${selectedSize === 'regular' ? 'selected' : ''}`}
                                 onClick={() => setSelectedSize('regular')}
                             >
-                                Medium
+                                {strings.medium}
                             </button>
 
-                            {/* 2. Database Options (Large, etc) */}
-                            {customizations.size.map(sizeOpt => (
+                            {/* 2. Database Options (Large, etc) - TRANSLATED */}
+                            {translatedCustomizations.size.map(sizeOpt => (
                                 <button
                                     key={sizeOpt.id}
                                     className={`option-button ${selectedSize === sizeOpt.id ? 'selected' : ''}`}
@@ -207,12 +363,12 @@ function CustomizationModal({ item, onClose, onCancel, onConfirm, existingCustom
                     </div>
                 )}
 
-                {/* Add-ons Section */}
-                {addons.length > 0 && (
+                {/* Add-ons Section - USES TRANSLATED DATA */}
+                {translatedAddons.length > 0 && (
                     <div className="customization-section">
-                        <h4>Add-Ons</h4>
+                        <h4>{strings.addOns}</h4>
                         <div className="options-grid">
-                            {addons.map(addon => (
+                            {translatedAddons.map(addon => (
                                 <button
                                     key={addon.id}
                                     className={`option-button ${selectedAddons.includes(addon.id) ? 'selected' : ''}`}
@@ -226,18 +382,19 @@ function CustomizationModal({ item, onClose, onCancel, onConfirm, existingCustom
                     </div>
                 )}
 
-                {/* Ice Level Section */}
-                {customizations.ice.length > 0 && (
+                {/* Ice Level Section - USES TRANSLATED DATA */}
+                {translatedCustomizations.ice.length > 0 && (
                     <div className="customization-section">
-                        <h4>Ice Level</h4>
+                        <h4>{strings.iceLevel}</h4>
                         <div className="options-grid">
+                            {/* Hardcoded "Regular Ice" (could be translated via strings file) */}
                             <button
                                 className={`option-button ${selectedIce === 'regular' ? 'selected' : ''}`}
                                 onClick={() => setSelectedIce('regular')}
                             >
-                                Regular Ice
+                                {strings.regIce} 
                             </button>
-                            {customizations.ice.map(ice => (
+                            {translatedCustomizations.ice.map(ice => (
                                 <button
                                     key={ice.id}
                                     className={`option-button ${selectedIce === ice.id ? 'selected' : ''}`}
@@ -250,18 +407,19 @@ function CustomizationModal({ item, onClose, onCancel, onConfirm, existingCustom
                     </div>
                 )}
 
-                {/* Sweetness Level Section */}
-                {customizations.sweetness.length > 0 && (
+                {/* Sweetness Level Section - USES TRANSLATED DATA */}
+                {translatedCustomizations.sweetness.length > 0 && (
                     <div className="customization-section">
-                        <h4>Sweetness Level</h4>
+                        <h4>{strings.sweetness}</h4>
                         <div className="options-grid">
+                            {/* Hardcoded "Regular Sweet" (could be translated via strings file) */}
                             <button
                                 className={`option-button ${selectedSweetness === 'regular' ? 'selected' : ''}`}
                                 onClick={() => setSelectedSweetness('regular')}
                             >
-                                Regular Sweet (100%)
+                                {strings.regSweet} (100%)
                             </button>
-                            {customizations.sweetness.map(sweet => (
+                            {translatedCustomizations.sweetness.map(sweet => (
                                 <button
                                     key={sweet.id}
                                     className={`option-button ${selectedSweetness === sweet.id ? 'selected' : ''}`}
@@ -276,7 +434,7 @@ function CustomizationModal({ item, onClose, onCancel, onConfirm, existingCustom
 
                 {/* Quantity and Footer */}
                 <div className="customization-section quantity-section">
-                    <h4>Quantity</h4>
+                    <h4>{strings.quantity}</h4>
                     <div className="quantity-controls">
                         <button onClick={() => setQuantity(Math.max(1, quantity - 1))}>-</button>
                         <span className="quantity-display">{quantity}</span>
@@ -286,11 +444,11 @@ function CustomizationModal({ item, onClose, onCancel, onConfirm, existingCustom
 
                 <div className="modal-footer">
                     <div className="total-display">
-                        <span>Total:</span>
+                        <span>{strings.total}:</span>
                         <span className="total-amount">${calculateTotal()}</span>
                     </div>
                     <button className="confirm-button" onClick={handleConfirm}>
-                        Add to Cart
+                        {strings.confirm}
                     </button>
                 </div>
             </div>

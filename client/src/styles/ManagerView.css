@@ -18,9 +18,33 @@
   z-index: 10;
 }
 
+.manager-header-left {
+  display: flex;
+  align-items: center;
+  gap: 1rem;
+}
+
 .manager-header h1 {
   margin: 0;
   font-size: 1.5rem;
+}
+
+.manager-low-contrast-btn {
+  background: rgba(255, 255, 255, 0.15);
+  color: white;
+  border: 1px solid rgba(255, 255, 255, 0.3);
+  padding: 0.5rem 1rem;
+  border-radius: 6px;
+  font-size: 0.875rem;
+  cursor: pointer;
+  transition: all 0.2s ease;
+  backdrop-filter: blur(4px);
+}
+
+.manager-low-contrast-btn:hover {
+  background: rgba(255, 255, 255, 0.25);
+  border-color: rgba(255, 255, 255, 0.4);
+  transform: translateY(-1px);
 }
 
 .manager-user-info {

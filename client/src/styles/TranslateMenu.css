@@ -1,48 +1,59 @@
 .translate-menu {
   display: flex;
   align-items: center;
-  gap: 0.8rem;
+  gap: var(--space-3);
   font-family: 'Inter', sans-serif;
-  margin: 0.5rem 0;
 }
 
 .translate-menu select {
-  padding: 8px 12px;
-  font-size: 1rem;
-  border: 1px solid #bbb;
-  border-radius: 8px;
-  background-color: #f6f6f6;
+  padding: var(--space-3) var(--space-4);
+  border-radius: var(--radius-xl);
+  font-size: var(--text-sm);
+  font-weight: var(--font-semibold);
+  transition: all var(--duration-base) var(--ease-out);
+  background: var(--neutral-0);
+  color: var(--neutral-700);
+  border: 2px solid var(--neutral-300);
   cursor: pointer;
-  transition: border 0.2s ease, background 0.2s ease;
+}
+
+.translate-menu select:hover {
+  border-color: var(--neutral-400);
+  background: var(--neutral-50);
 }
 
 .translate-menu select:focus {
   outline: none;
-  border-color: #0066ff;
-  background-color: #fff;
+  border-color: var(--primary-600);
+  background: var(--neutral-0);
 }
 
 .translate-menu button {
-  padding: 8px 14px;
-  font-size: 1rem;
-  font-weight: 600;
-  border-radius: 8px;
+  padding: var(--space-3) var(--space-5);
+  border-radius: var(--radius-xl);
+  font-size: var(--text-sm);
+  font-weight: var(--font-semibold);
+  transition: all var(--duration-base) var(--ease-out);
+  background: linear-gradient(135deg, var(--primary-600) 0%, var(--primary-700) 100%);
+  color: var(--neutral-0);
+  box-shadow: var(--shadow-lg);
   border: none;
-  background-color: #0066ff;
-  color: #fff;
   cursor: pointer;
-  transition: background 0.25s ease, transform 0.15s ease;
 }
 
 .translate-menu button:hover {
-  background-color: #0053d1;
+  transform: translateY(-2px);
+  box-shadow: var(--shadow-xl);
 }
 
 .translate-menu button:active {
-  transform: scale(0.97);
+  transform: translateY(0);
 }
 
 .translate-menu button:disabled {
-  background-color: #aaa;
+  background: var(--neutral-400);
+  color: var(--neutral-200);
   cursor: not-allowed;
+  box-shadow: none;
+  transform: none;
 }

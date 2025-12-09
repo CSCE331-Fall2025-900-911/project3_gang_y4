@@ -38,6 +38,7 @@ A modern, full-stack kiosk application for boba tea shops featuring customer sel
 - **Manager Login** - Separate login for manager access with elevated permissions
 - **Guest Checkout** - No account required for quick purchases
 - **Role-Based Routing** - Automatic redirection based on user type
+- **Navigation** - Back button on login screen to return to landing page
 
 ### 🛒 Customer Self-Service Kiosk
 - **Dynamic Menu** - Real-time menu loading from PostgreSQL with category filtering
@@ -54,6 +55,7 @@ A modern, full-stack kiosk application for boba tea shops featuring customer sel
 - **Payment Methods** - Touchscreen-friendly Cash/Card selection
 - **Rewards Display** - Shows current points balance for authenticated users
 - **Rewards Earning** - Earn 1 point per cent spent (100 points = $1)
+- **Accessibility Features** - Low contrast mode toggle available throughout the application
 
 ### 💼 Employee Checkout Interface
 - **Complete POS System** - Full checkout interface for staff-assisted orders
@@ -68,6 +70,7 @@ A modern, full-stack kiosk application for boba tea shops featuring customer sel
 - **Inventory Management** - Track and manage stock levels
 - **Employee Management** - View and manage staff accounts
 - **Order History** - View all orders with filtering options
+- **Low Contrast Mode** - Accessibility toggle in header for reduced visual strain
 
 ### 🎁 Rewards System
 - **Points Tracking** - 1 point = 1 cent spent (100 points = $1)
