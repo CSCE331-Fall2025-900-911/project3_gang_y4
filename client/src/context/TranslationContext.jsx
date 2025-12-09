@@ -1,5 +1,6 @@
 // src/context/TranslationContext.jsx
 import React, { createContext, useContext, useEffect, useState } from 'react';
+import API_URL from '../config/api';
 
 const TranslationContext = createContext();
 
@@ -35,21 +36,46 @@ export function TranslationProvider({ children, availableStringFiles = {} }) {
     const texts = keys.map(k => originals[k]);
 
     try {
-      const res = await fetch('/api/translate', {
+      // Use configured API URL when available (build-time or runtime fallback).
+      const endpoint = (API_URL || '') + '/api/translate';
+      const res = await fetch(endpoint, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ 
-          text: texts,      // Changed from 'texts' to 'text'
-          target: targetLang // Changed from 'targetLanguage' to 'target'
-        })
+        body: JSON.stringify({ text: texts, target: targetLang })
       });
-      const data = await res.json();
-      if (!res.ok) throw new Error(data.error || 'Translation API error');
+
+      // Be robust: read text first, handle empty response or non-JSON gracefully
+      const raw = await res.text();
+      if (!raw) {
+        const err = new Error(`Empty response from translation API (status ${res.status})`);
+        console.error('translatePage error', err);
+        throw err;
+      }
+
+      let data;
+      try {
+        data = JSON.parse(raw);
+      } catch (parseErr) {
+        const err = new Error('Invalid JSON from translation API');
+        console.error('translatePage error - invalid JSON', parseErr, 'raw=', raw);
+        throw err;
+      }
+
+      if (!res.ok) {
+        const err = new Error(data?.error || `Translation API error (status ${res.status})`);
+        console.error('translatePage error', err, data);
+        throw err;
+      }
+
+      if (!data.translations || !Array.isArray(data.translations)) {
+        const err = new Error('Unexpected translation API response shape');
+        console.error('translatePage error', err, data);
+        throw err;
+      }
 
       const translated = {};
-      // Update to match new response structure
-      data.translations.forEach((t, i) => { 
-        translated[keys[i]] = t.translatedText; 
+      data.translations.forEach((t, i) => {
+        translated[keys[i]] = t.translatedText || t.text || '';
       });
 
       return translated;
