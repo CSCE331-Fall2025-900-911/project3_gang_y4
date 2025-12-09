@@ -38,7 +38,6 @@ A modern, full-stack kiosk application for boba tea shops featuring customer sel
 - **Manager Login** - Separate login for manager access with elevated permissions
 - **Guest Checkout** - No account required for quick purchases
 - **Role-Based Routing** - Automatic redirection based on user type
-- **Navigation** - Back button on login screen to return to landing page
 
 ### 🛒 Customer Self-Service Kiosk
 - **Dynamic Menu** - Real-time menu loading from PostgreSQL with category filtering
