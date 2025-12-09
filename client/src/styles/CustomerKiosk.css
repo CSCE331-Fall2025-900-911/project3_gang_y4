@@ -70,6 +70,121 @@
   gap: var(--space-4);
 }
 
+/* ==========================
+   Low Contrast Mode Support
+   Toggle the `.low-contrast` class on the root `.kiosk` element
+   to reduce saturation and soften colors for a muted view.
+   ========================== */
+.low-contrast .kiosk,
+.kiosk.low-contrast {
+  /* subtle visual desaturation and softer contrast */
+  filter: grayscale(60%) contrast(90%);
+}
+
+/* Softened header + background when low contrast is active */
+.low-contrast .kiosk .kiosk__header,
+.kiosk.low-contrast .kiosk__header {
+  background: rgba(250, 250, 250, 0.95);
+  border-bottom-color: #e6e6e6;
+}
+
+/* Make brand colors muted */
+.low-contrast .kiosk .kiosk__brand-name,
+.kiosk.low-contrast .kiosk__brand-name {
+  background: none;
+  -webkit-text-fill-color: #374151; /* muted slate */
+  color: #374151;
+  opacity: 0.95;
+}
+
+/* Muted buttons and interactive elements */
+.low-contrast .kiosk .kiosk__btn,
+.low-contrast .kiosk .kiosk__btn--checkout,
+.low-contrast .kiosk .kiosk__btn--cancel,
+.low-contrast .kiosk .payment-option,
+.kiosk.low-contrast .kiosk__btn,
+.kiosk.low-contrast .kiosk__btn--checkout,
+.kiosk.low-contrast .kiosk__btn--cancel,
+.kiosk.low-contrast .payment-option {
+  filter: none;
+  background: #f3f4f6 !important;
+  color: #374151 !important;
+  border-color: #e5e7eb !important;
+  box-shadow: none !important;
+}
+
+/* Make text slightly less prominent */
+.low-contrast .kiosk,
+.low-contrast .kiosk .kiosk__brand,
+.low-contrast .kiosk .kiosk__user,
+.low-contrast .kiosk .kiosk__greeting,
+.kiosk.low-contrast,
+.kiosk.low-contrast .kiosk__brand,
+.kiosk.low-contrast .kiosk__user,
+.kiosk.low-contrast .kiosk__greeting {
+  color: #4b5563;
+}
+
+/* Muted payment modal */
+.low-contrast .kiosk dialog.payment-modal,
+.kiosk.low-contrast dialog.payment-modal {
+  background: #fbfbfb;
+}
+
+/* Low-contrast toggle button (fixed bottom-left) */
+.kiosk__low-contrast-toggle {
+  position: fixed;
+  left: 16px;
+  bottom: 16px;
+  z-index: 11000;
+  /* strong white background for high visibility */
+  background: rgba(255, 255, 255, 0.95);
+  color: #0f172a; /* dark text for readability */
+  border: 1px solid rgba(15, 23, 42, 0.06);
+  padding: 8px 12px;
+  border-radius: 10px;
+  font-size: 13px;
+  cursor: pointer;
+  backdrop-filter: blur(6px);
+  box-shadow: 0 6px 20px rgba(2,6,23,0.08);
+  transition: transform 0.18s ease, box-shadow 0.18s ease;
+}
+
+.kiosk__low-contrast-toggle:hover {
+  transform: translateY(-3px);
+  box-shadow: 0 10px 30px rgba(2,6,23,0.12);
+}
+
+@media (max-width: 640px) {
+  .kiosk__low-contrast-toggle {
+    left: 12px;
+    bottom: 12px;
+    padding: 8px 10px;
+    font-size: 12px;
+  }
+}
+
+/* Also support low-contrast styling for the login screen when body has the class */
+.low-contrast .login,
+.login.low-contrast {
+  filter: grayscale(60%) contrast(90%);
+  color: #4b5563;
+}
+
+.low-contrast .login .login__card,
+.login.low-contrast .login__card {
+  background: #fbfbfb;
+  border-color: #e6e6e6;
+}
+
+.low-contrast .login .login__btn,
+.login.low-contrast .login__btn {
+  background: #f3f4f6 !important;
+  color: #374151 !important;
+  border-color: #e5e7eb !important;
+  box-shadow: none !important;
+}
+
 .kiosk__greeting {
   font-size: var(--text-sm);
   color: var(--neutral-600);
@@ -137,6 +252,7 @@
 .kiosk__body {
   display: grid;
   grid-template-columns: 240px 1fr 400px;
+  grid-template-rows: minmax(0, 1fr);
   flex: 1;
   overflow: hidden;
 }
@@ -148,6 +264,7 @@
   border-right: 1px solid var(--neutral-200);
   padding: var(--space-6);
   overflow-y: auto;
+  min-height: 0;
 }
 
 .kiosk__nav-title {
@@ -272,6 +389,11 @@
   border-radius: var(--radius-2xl);
   box-shadow: var(--shadow-md);
   z-index: 5;
+  opacity: 1;
+}
+
+.category-heading:hover {
+  opacity: 0;
 }
 
 .kiosk__category-accent {
@@ -351,6 +473,12 @@
   opacity: 1;
 }
 
+.item-info {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+}
+
 .product-card__add {
   background: var(--neutral-0);
   color: var(--primary-600);
@@ -386,6 +514,8 @@
   flex-direction: column;
   background: var(--neutral-0);
   border-left: 1px solid var(--neutral-200);
+  height: 100%;
+  overflow: hidden;
 }
 
 .kiosk__cart-header {
@@ -416,6 +546,7 @@
 .kiosk__cart-items {
   flex: 1;
   overflow-y: auto;
+  min-height: 0;
   padding: var(--space-4);
 }
 

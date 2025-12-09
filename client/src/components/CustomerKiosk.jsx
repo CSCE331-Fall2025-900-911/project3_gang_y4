@@ -1,6 +1,7 @@
 import React, { useState, useEffect, useRef } from 'react';
 import CustomizationModal from './CustomizationModal';
 import OrderHistoryModal from './OrderHistoryModal';
+import OrderConfirmationModal from './OrderConfirmationModal';
 import { API_ENDPOINTS } from '../config/api';
 import placeholderImage from '../images/placeholdertea.png';
 import WeatherBackground from './WeatherBackground';
@@ -32,11 +33,31 @@ function CustomerKiosk({ user, onLogout }) {
   const [showOrderHistory, setShowOrderHistory] = useState(false);
   const [customerInfo, setCustomerInfo] = useState(null);
   const [customerLoading, setCustomerLoading] = useState(true);
+  const [showConfirmation, setShowConfirmation] = useState(false);
+  const [confirmationData, setConfirmationData] = useState(null);
+  const [lowContrast, setLowContrast] = useState(() => {
+    try {
+      return JSON.parse(localStorage.getItem('kiosk_low_contrast')) || false;
+    } catch (e) {
+      return false;
+    }
+  });
   const customerFetchInProgress = useRef(false);
   
   // Get translation functions and current language from context
   const { getStringsForPage, setAppLanguage, translateDynamicContent, language } = useTranslation();
   const strings = getStringsForPage('kiosk');
+
+  // Keep a body-level class in sync so other pages can respond too
+  useEffect(() => {
+    try {
+      const host = document.body || document.documentElement;
+      if (lowContrast) host.classList.add('low-contrast');
+      else host.classList.remove('low-contrast');
+    } catch (e) {
+      // ignore server-side renders or environments without DOM
+    }
+  }, [lowContrast]);
 
   // Fetch/create customer account
   useEffect(() => {
@@ -355,6 +376,19 @@ function CustomerKiosk({ user, onLogout }) {
     setEditingCartIndex(null);
   };
 
+  function getGradientColor(category) {
+    switch (category) {
+      case 'Tea':
+        return 'rgba(255, 229, 137, 0.9)'; 
+      case 'Seasonal':
+        return 'rgba(132, 238, 235, 0.85)';
+      case 'Slush':
+        return 'rgba(254, 164, 188, 0.85)';
+      default:
+        return 'rgba(211, 211, 211, 0.8)'; // Light Gray
+    }
+  }
+
   const removeFromCart = (cartIndex) => {
     const item = cart[cartIndex];
     if (item.quantity > 1) {
@@ -458,7 +492,15 @@ function CustomerKiosk({ user, onLogout }) {
       }
 
       setCart([]);
-      alert(`Order placed successfully!\nOrder #${result.order_id}\nTotal: $${total.toFixed(2)}${rewardsMessage}\n\nThank you for your order!`);
+      setConfirmationData({
+        orderId: result.order_id,
+        total: total,
+        rewardsInfo: rewardsMessage ? {
+          earnedPoints: Math.round(total * 100),
+          newBalance: rewardsMessage.split('New balance: ')[1]?.split(' points')[0] || 0
+        } : null
+      });
+      setShowConfirmation(true);
     } catch (error) {
       console.error('Checkout error:', error);
       alert(`Failed to complete order: ${error.message}\nPlease try again or contact staff.`);
@@ -475,7 +517,7 @@ function CustomerKiosk({ user, onLogout }) {
 
   return (
     <WeatherBackground>
-      <div className="kiosk">
+      <div className={`kiosk ${lowContrast ? 'low-contrast' : ''}`}>
         {/* Header */}
         <header className="kiosk__header">
           <div className="kiosk__brand">
@@ -709,6 +751,30 @@ function CustomerKiosk({ user, onLogout }) {
         {showOrderHistory && customerInfo?.custid && (
           <OrderHistoryModal customerId={customerInfo.custid} onClose={() => setShowOrderHistory(false)} />
         )}
+
+        {/* Order Confirmation Modal */}
+        {showConfirmation && confirmationData && (
+          <OrderConfirmationModal
+            orderId={confirmationData.orderId}
+            total={confirmationData.total}
+            rewardsInfo={confirmationData.rewardsInfo}
+            onClose={() => setShowConfirmation(false)}
+          />
+        )}
+
+        {/* Low contrast toggle - bottom left */}
+        <button
+          className="kiosk__low-contrast-toggle"
+          onClick={() => {
+            const next = !lowContrast;
+            setLowContrast(next);
+            try { localStorage.setItem('kiosk_low_contrast', JSON.stringify(next)); } catch (e) {}
+          }}
+          aria-pressed={lowContrast}
+          title="Toggle low contrast view"
+        >
+          {lowContrast ? 'Normal contrast' : 'Low contrast'}
+        </button>
       </div>
     </WeatherBackground>
   );
