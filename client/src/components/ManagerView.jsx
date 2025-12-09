@@ -11,7 +11,12 @@ function ManagerView({ user, onLogout }) {
   return (
     <div className="manager-view">
       <header className="manager-header">
-        <h1>Manager Dashboard</h1>
+        <div className="manager-header-left">
+          <h1>Manager Dashboard</h1>
+          <button className="manager-low-contrast-btn" aria-label="Toggle low contrast">
+            Low contrast
+          </button>
+        </div>
         <div className="manager-user-info">
           <span>Welcome, {user?.name || user?.username}</span>
           <span className="user-level">{user?.level}</span>
