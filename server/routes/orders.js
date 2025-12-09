@@ -277,6 +277,7 @@ router.get('/recent', async (req, res) => {
       so.order_id,
       so.customer_id,
       so.employee_id,
+      so.order_date AT TIME ZONE 'America/Chicago' as order_date_cst,
       so.order_date,
       so.order_details,
       so.subtotal,
@@ -328,6 +329,7 @@ router.get('/search', async (req, res) => {
         so.customer_id,
         so.employee_id,
         so.order_date,
+        so.order_date AT TIME ZONE 'America/Chicago' as order_date_cst,
         so.order_details,
         so.subtotal,
         so.tax,
@@ -421,7 +423,7 @@ router.get('/:order_id', async (req, res) => {
     const { order_id } = req.params;
 
     const result = await query(
-      `SELECT order_id, customer_id, order_date, order_details,
+      `SELECT order_id, customer_id, order_date, so.order_date AT TIME ZONE 'America/Chicago' as order_date_cst, order_details,
               subtotal, tax, total, payment_method, order_status
        FROM sales_orders
        WHERE order_id = $1`,
