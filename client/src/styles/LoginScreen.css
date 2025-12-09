@@ -47,6 +47,43 @@
   left: -10%;
 }
 
+/* ========== BACK BUTTON ========== */
+.login__back-btn {
+  position: absolute;
+  top: var(--space-6);
+  left: var(--space-6);
+  z-index: 10;
+  width: 48px;
+  height: 48px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background: var(--neutral-0);
+  border: 2px solid var(--neutral-200);
+  border-radius: var(--radius-xl);
+  color: var(--neutral-700);
+  cursor: pointer;
+  transition: all var(--duration-base) var(--ease-out);
+  box-shadow: var(--shadow-md);
+}
+
+.login__back-btn:hover {
+  background: var(--neutral-50);
+  border-color: var(--neutral-300);
+  transform: translateX(-2px);
+  box-shadow: var(--shadow-lg);
+}
+
+.login__back-btn:active {
+  transform: translateX(0) scale(0.95);
+}
+
+.login__back-btn svg {
+  width: 24px;
+  height: 24px;
+  stroke: currentColor;
+}
+
 /* ========== CARD ========== */
 .login__card {
   position: relative;
