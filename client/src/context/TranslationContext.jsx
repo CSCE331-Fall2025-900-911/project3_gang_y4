@@ -100,81 +100,107 @@ export function TranslationProvider({ children, availableStringFiles = {} }) {
   };
 
   const translateDynamicContent = async (texts, cacheKey, targetLang) => {
-  console.log(`Translating dynamic content with key "${cacheKey}" to "${targetLang}"`);
-  if (targetLang === 'en') return texts;
-
-  const cached = dynamicTranslations[targetLang]?.[cacheKey];
-  if (cached) {
-    console.log(`Using cached dynamic translations for key "${cacheKey}"`);
-    return cached;
-  }
-
-  try {
-    // Match translatePage URL resolution
-    const endpoint = (API_URL || '') + '/api/translate';
-
-    const res = await fetch(endpoint, {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({
-        text: texts,
-        target: targetLang
-      })
-    });
-
-    // Be robust: read raw text first
-    const raw = await res.text();
-    if (!raw) {
-      const err = new Error(`Empty response from translation API (status ${res.status})`);
-      console.error('translateDynamicContent error', err);
-      throw err;
+    console.log(`Translating dynamic content with key "${cacheKey}" to "${targetLang}"`);
+    
+    // Check if English originals exist in cache
+    const hasEnglishOriginals = dynamicTranslations.en?.[cacheKey];
+    
+    // Always store English originals in cache if not already there
+    let currentDynamicTranslations = dynamicTranslations;
+    if (!hasEnglishOriginals) {
+      const newDynamicTranslations = {
+        ...(dynamicTranslations || {}),
+        en: {
+          ...(dynamicTranslations.en || {}),
+          [cacheKey]: texts
+        }
+      };
+      setDynamicTranslations(newDynamicTranslations);
+      localStorage.setItem('dynamicTranslations', JSON.stringify(newDynamicTranslations));
+      console.log(`Stored English originals for key "${cacheKey}"`);
+      // Use the new state immediately
+      currentDynamicTranslations = newDynamicTranslations;
     }
 
-    let data;
+    // Return English originals from cache or the provided texts
+    if (targetLang === 'en') {
+      const englishOriginals = currentDynamicTranslations.en?.[cacheKey] || texts;
+      console.log(`Returning English originals for key "${cacheKey}":`, englishOriginals);
+      return englishOriginals;
+    }
+
+    const cached = dynamicTranslations[targetLang]?.[cacheKey];
+    if (cached) {
+      console.log(`Using cached dynamic translations for key "${cacheKey}"`);
+      return cached;
+    }
+
     try {
-      data = JSON.parse(raw);
-    } catch (parseErr) {
-      const err = new Error('Invalid JSON from translation API');
-      console.error('translateDynamicContent error - invalid JSON', parseErr, 'raw=', raw);
-      throw err;
-    }
+      // Match translatePage URL resolution
+      const endpoint = (API_URL || '') + '/api/translate';
 
-    if (!res.ok) {
-      const err = new Error(data?.error || `Translation API error (status ${res.status})`);
-      console.error('translateDynamicContent error', err, data);
-      throw err;
-    }
+      const res = await fetch(endpoint, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          text: texts,
+          target: targetLang
+        })
+      });
 
-    if (!data.translations || !Array.isArray(data.translations)) {
-      const err = new Error('Unexpected translation API response shape');
-      console.error('translateDynamicContent error', err, data);
-      throw err;
-    }
-
-    const translatedTexts = data.translations.map(t =>
-      t.translatedText || t.text || ''
-    );
-
-    console.log(`Translated dynamic content for key "${cacheKey}":`, translatedTexts);
-
-    const newDynamicTranslations = {
-      ...(dynamicTranslations || {}),
-      [targetLang]: {
-        ...(dynamicTranslations[targetLang] || {}),
-        [cacheKey]: translatedTexts
+      // Be robust: read raw text first
+      const raw = await res.text();
+      if (!raw) {
+        const err = new Error(`Empty response from translation API (status ${res.status})`);
+        console.error('translateDynamicContent error', err);
+        throw err;
       }
-    };
 
-    setDynamicTranslations(newDynamicTranslations);
-    localStorage.setItem('dynamicTranslations', JSON.stringify(newDynamicTranslations));
-    console.log('Persisted dynamic translations to localStorage');
+      let data;
+      try {
+        data = JSON.parse(raw);
+      } catch (parseErr) {
+        const err = new Error('Invalid JSON from translation API');
+        console.error('translateDynamicContent error - invalid JSON', parseErr, 'raw=', raw);
+        throw err;
+      }
 
-    return translatedTexts;
-  } catch (err) {
-    console.error('translateDynamicContent error:', err);
-    throw err;
-  }
-};
+      if (!res.ok) {
+        const err = new Error(data?.error || `Translation API error (status ${res.status})`);
+        console.error('translateDynamicContent error', err, data);
+        throw err;
+      }
+
+      if (!data.translations || !Array.isArray(data.translations)) {
+        const err = new Error('Unexpected translation API response shape');
+        console.error('translateDynamicContent error', err, data);
+        throw err;
+      }
+
+      const translatedTexts = data.translations.map(t =>
+        t.translatedText || t.text || ''
+      );
+
+      console.log(`Translated dynamic content for key "${cacheKey}":`, translatedTexts);
+
+      const newDynamicTranslations = {
+        ...(dynamicTranslations || {}),
+        [targetLang]: {
+          ...(dynamicTranslations[targetLang] || {}),
+          [cacheKey]: translatedTexts
+        }
+      };
+
+      setDynamicTranslations(newDynamicTranslations);
+      localStorage.setItem('dynamicTranslations', JSON.stringify(newDynamicTranslations));
+      console.log('Persisted dynamic translations to localStorage');
+
+      return translatedTexts;
+    } catch (err) {
+      console.error('translateDynamicContent error:', err);
+      throw err;
+    }
+  };
     
   const setAppLanguage = async (targetLang, pageKeys = Object.keys(availableStringFiles)) => {
     console.log(`Setting app language to "${targetLang}" for pages:`, pageKeys);

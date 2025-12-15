@@ -93,6 +93,8 @@ function CustomerKiosk({ user, onLogout }) {
     }
   }, [user]);
 
+
+  const categoryMapRef = useRef({});
   // Fetch menu data (this only runs once on mount)
   useEffect(() => {
     const fetchMenu = async () => {
@@ -129,86 +131,71 @@ function CustomerKiosk({ user, onLogout }) {
     fetchMenu();
   }, []);
 
-  // NEW: Effect to translate menu data whenever language changes
+ // CustomerKiosk.jsx
+
+// NEW: Effect to translate menu data whenever language changes
   useEffect(() => {
-    // Only translate if we have menu data
-    if (menuData.length === 0) return;
+  if (menuData.length === 0) return;
 
-    const translateMenu = async () => {
-      console.log(`Translating menu to language: ${language}`);
+  const translateMenu = async () => {
+    // 1. Always find the ORIGINAL English name of the current category first
+    const originalCategoryName = categoryMapRef.current[activeCategory] || activeCategory;
+
+    // 2. Handle English (The Reset)
+    if (language === 'en') {
+      setTranslatedMenuData(menuData);
+      setCustomizationTranslations({});
+      setActiveCategory(originalCategoryName);
       
-      // If English, just use the original data
-      if (language === 'en') {
-        setTranslatedMenuData(menuData);
-        setCustomizationTranslations({}); // Clear translations
-        return;
-      }
+      // Reset the map to English
+      const resetMap = {};
+      menuData.forEach(cat => { resetMap[cat.category] = cat.category; });
+      categoryMapRef.current = resetMap;
+      return;
+    }
 
-      try {
-        // Translate each category separately for better caching
-        const translatedCategories = await Promise.all(
-          menuData.map(async (category) => {
-            // Collect all texts to translate for this category
-            // Start with the category name, then all item names
-            const textsToTranslate = [
-              category.category,
-              ...category.items.map(item => item.name)
-            ];
+    // 3. Handle Other Languages
+    try {
+      const translatedCategories = await Promise.all(
+        menuData.map(async (category) => {
+          const textsToTranslate = [category.category, ...category.items.map(item => item.name)];
+          const translations = await translateDynamicContent(textsToTranslate, `menu-${category.category}`, language);
 
-            // Create a unique cache key for this category
-            const cacheKey = `menu-category-${category.category}`;
+          const translatedCatName = translations[0];
+          
+          // Update our Map Ref so we can find our way back to English later
+          categoryMapRef.current[translatedCatName] = category.category;
 
-            // Call translateDynamicContent from context
-            const translations = await translateDynamicContent(
-              textsToTranslate,
-              cacheKey,
-              language
-            );
-
-            // First translation is the category name
-            const translatedCategoryName = translations[0];
-            
-            // Remaining translations are item names
-            const translatedItems = category.items.map((item, index) => ({
+          return {
+            ...category,
+            originalCategory: category.category,
+            category: translatedCatName,
+            items: category.items.map((item, i) => ({
               ...item,
-              // Store original name for internal use (cart, API calls)
               originalName: item.name,
-              // Replace name with translated version for display
-              name: translations[index + 1]
-            }));
+              name: translations[i + 1]
+            }))
+          };
+        })
+      );
 
-            return {
-              ...category,
-              // Store original category name for internal use
-              originalCategory: category.category,
-              // Replace category with translated version for display
-              category: translatedCategoryName,
-              items: translatedItems
-            };
-          })
-        );
+      setTranslatedMenuData(translatedCategories);
 
-        console.log('Menu translation complete:', translatedCategories);
-        setTranslatedMenuData(translatedCategories);
-        
-        // Update active category to the translated version if needed
-        if (activeCategory) {
-          const matchingCategory = translatedCategories.find(
-            cat => cat.originalCategory === activeCategory
-          );
-          if (matchingCategory) {
-            setActiveCategory(matchingCategory.category);
-          }
-        }
-      } catch (err) {
-        console.error('Error translating menu:', err);
-        // On error, fall back to original English menu
-        setTranslatedMenuData(menuData);
+      // 4. Update Active Category to the NEW translated name
+      const newActiveCat = translatedCategories.find(c => c.originalCategory === originalCategoryName);
+      if (newActiveCat) {
+        setActiveCategory(newActiveCat.category);
       }
-    };
+    } catch (err) {
+      console.error("Translation failed", err);
+      setTranslatedMenuData(menuData);
+    }
+  };
 
-    translateMenu();
-  }, [language, menuData, translateDynamicContent]); // Re-run when language or menu data changes
+  translateMenu();
+}, [language, menuData]); // Removed translatedMenuData from dependencies to prevent loops
+
+
 
   // NEW: Effect to translate customization options for cart display
   useEffect(() => {
