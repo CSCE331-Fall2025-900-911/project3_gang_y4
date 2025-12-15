@@ -76,7 +76,7 @@ router.get('/grouped', async (req, res) => {
             const nameLower = row.menu_name.toLowerCase();
 
             // Logic to sort into categories
-            if (nameLower.includes('ice')) {
+            if (nameLower.includes('ice') || nameLower.includes('hot')) {
                 grouped.ice.push(item);
             } else if (nameLower.includes('sweet') || nameLower.includes('sugar')) {
                 grouped.sweetness.push(item);
