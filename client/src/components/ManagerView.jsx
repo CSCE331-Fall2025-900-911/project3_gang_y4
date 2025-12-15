@@ -835,16 +835,40 @@ function OrdersTab() {
   };
 
   const formatDateTime = (dateString) => {
-    const date = new Date(dateString);
-    return date.toLocaleString('en-US', {
-      timeZone: 'America/Chicago',
-      month: 'short',
-      day: 'numeric',
-      year: 'numeric',
-      hour: 'numeric',
-      minute: '2-digit',
-      hour12: true
-    }) + ' CST';
+    if (!dateString) return '';
+
+    // If the string looks like a YYYY-MM-DD[ T]HH:MM(:SS) timestamp (no TZ),
+    // format the components as-is and append CST so we don't perform any
+    // timezone conversion in the browser.
+    const m = dateString.match(/^(\d{4})-(\d{2})-(\d{2})(?:[T\s](\d{2}):(\d{2})(?::(\d{2})(?:\.\d+)?)?)?/);
+    if (m) {
+      const [, y, mo, d, hh = '00', min = '00'] = m;
+      const monthName = new Date(`${y}-${mo}-01`).toLocaleString('en-US', { month: 'short' });
+      let hour = parseInt(hh, 10);
+      const minute = min;
+      const ampm = hour >= 12 ? 'PM' : 'AM';
+      hour = hour % 12 || 12;
+      return `${monthName} ${parseInt(d, 10)}, ${y}, ${hour}:${minute} ${ampm} CST`;
+    }
+
+    // Fallback: try to parse with Date and format nicely (still show CST label)
+    try {
+      const date = new Date(dateString);
+      if (!isNaN(date)) {
+        return date.toLocaleString('en-US', {
+          month: 'short',
+          day: 'numeric',
+          year: 'numeric',
+          hour: 'numeric',
+          minute: '2-digit',
+          hour12: true
+        }) + ' CST';
+      }
+    } catch (e) {
+      // ignore and fall through
+    }
+
+    return dateString;
   };
 
   if (loading) return <div className="loading">Loading orders...</div>;
@@ -1482,16 +1506,34 @@ function XReportTab() {
   };
 
   const formatDateTime = (dateStr) => {
-    const date = new Date(dateStr);
-    return date.toLocaleString('en-US', {
-      timeZone: 'America/Chicago',
-      month: 'short',
-      day: 'numeric',
-      year: 'numeric',
-      hour: 'numeric',
-      minute: '2-digit',
-      hour12: true
-    });
+    if (!dateStr) return '';
+
+    const m = dateStr.match(/^(\d{4})-(\d{2})-(\d{2})(?:[T\s](\d{2}):(\d{2})(?::(\d{2})(?:\.\d+)?)?)?/);
+    if (m) {
+      const [, y, mo, d, hh = '00', min = '00'] = m;
+      const monthName = new Date(`${y}-${mo}-01`).toLocaleString('en-US', { month: 'short' });
+      let hour = parseInt(hh, 10);
+      const minute = min;
+      const ampm = hour >= 12 ? 'PM' : 'AM';
+      hour = hour % 12 || 12;
+      return `${monthName} ${parseInt(d, 10)}, ${y}, ${hour}:${minute} ${ampm} CST`;
+    }
+
+    try {
+      const date = new Date(dateStr);
+      if (!isNaN(date)) {
+        return date.toLocaleString('en-US', {
+          month: 'short',
+          day: 'numeric',
+          year: 'numeric',
+          hour: 'numeric',
+          minute: '2-digit',
+          hour12: true
+        });
+      }
+    } catch (e) {}
+
+    return dateStr;
   };
 
   if (loading) {

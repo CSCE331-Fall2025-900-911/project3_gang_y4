@@ -34,16 +34,36 @@ function OrderHistoryModal({ customerId, onClose }) {
   };
 
   const formatDate = (dateString) => {
-    const date = new Date(dateString);
-    return date.toLocaleString('en-US', {
-      timeZone: 'America/Chicago',
-      month: 'short',
-      day: 'numeric',
-      year: 'numeric',
-      hour: 'numeric',
-      minute: '2-digit',
-      hour12: true
-    }) + ' CST';
+    if (!dateString) return '';
+
+    // If timestamp is in YYYY-MM-DD[ T]HH:MM(:SS) format with no TZ, format as-is
+    const m = dateString.match(/^(\d{4})-(\d{2})-(\d{2})(?:[T\s](\d{2}):(\d{2})(?::(\d{2})(?:\.\d+)?)?)?/);
+    if (m) {
+      const [, y, mo, d, hh = '00', min = '00'] = m;
+      const monthName = new Date(`${y}-${mo}-01`).toLocaleString('en-US', { month: 'short' });
+      let hour = parseInt(hh, 10);
+      const minute = min;
+      const ampm = hour >= 12 ? 'PM' : 'AM';
+      hour = hour % 12 || 12;
+      return `${monthName} ${parseInt(d, 10)}, ${y}, ${hour}:${minute} ${ampm} CST`;
+    }
+
+    // Fallback: try native Date parsing and format
+    try {
+      const date = new Date(dateString);
+      if (!isNaN(date)) {
+        return date.toLocaleString('en-US', {
+          month: 'short',
+          day: 'numeric',
+          year: 'numeric',
+          hour: 'numeric',
+          minute: '2-digit',
+          hour12: true
+        }) + ' CST';
+      }
+    } catch (e) {}
+
+    return dateString;
   };
 
   const getItemCount = (orderDetails) => {
